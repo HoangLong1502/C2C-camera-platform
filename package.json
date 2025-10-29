@@ -1,0 +1,51 @@
+{
+  "name": "my-modern-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "google-auth-library": "^10.4.2",
+    "lucide-react": "^0.294.0",
+    "pg": "^8.11.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^20.10.6",
+    "@types/pg": "^8.10.9",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "babel-jest": "^30.2.0",
+    "cors": "^2.8.5",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "express": "^4.18.2",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.2.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8"
+  },
+  "scripts": {
+  "test": "jest --runInBand",
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start"
+}
+
+}
