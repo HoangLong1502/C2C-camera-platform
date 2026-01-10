@@ -1,142 +1,242 @@
 # C2C Camera Platform 📷
 
-## Overview 📝
+Nền tảng thương mại điện tử **C2C mua bán máy ảnh**, cho phép người dùng đăng bán, mua hàng và trò chuyện trực tiếp giữa người mua – người bán.
 
-C2C Camera Platform is a full-stack consumer-to-consumer web application that enables users to buy and sell camera equipment directly with each other. Users can create listings, manage transactions, and communicate in real time through an integrated chat system. A separate admin panel is provided to monitor platform activity, manage content, and track revenue.
-
-The project focuses on security, scalability, and clean architecture, following modern best practices for web application development.
+Project được xây dựng theo kiến trúc **Fullstack hiện đại**, sử dụng **Next.js** cho Frontend và **NestJS** cho Backend, áp dụng các tiêu chuẩn bảo mật và tổ chức code theo best practices.
 
 ---
 
-## Tech Stack 🛠️
+## 🏗️ Architecture Overview
 
-### Frontend
+### Backend (NestJS)
 
-* Next.js (App Router)
-* TypeScript
-* Server-side rendering and client-side data fetching
+* Framework: NestJS + TypeScript
+* Database: PostgreSQL (TypeORM)
+* Authentication: JWT (Access Token + Refresh Token)
+* Password Hashing: bcrypt
+* API Base URL: `http://localhost:3000/api`
+* Port: 3000
 
-### Backend
+### Frontend (Next.js)
 
-* NestJS
-* RESTful APIs
-* WebSocket for real-time communication
-* JWT-based authentication and authorization
-
-### Database
-
-* PostgreSQL or MySQL
-* TypeORM for ORM and data access
+* Framework: Next.js 16 (App Router)
+* Styling: Tailwind CSS v4
+* State Management: React Context (Auth)
+* HTTP Client: Axios (interceptors + token refresh)
+* Port: 3001 (tự động tăng nếu bận)
 
 ---
 
-## Main Features ✨
+## ✨ Main Features
 
 ### User Features
 
-* User registration, login, and logout
-* Profile management
-* Create, update, and delete camera listings
-* Browse, search, and view camera products
-* Purchase camera equipment from other users
-* View order and transaction history
-* Real-time one-to-one chat between buyers and sellers
+* Đăng ký / đăng nhập người dùng
+* Phân quyền: Buyer / Seller / Both / Admin
+* Đăng bán sản phẩm máy ảnh
+* Tìm kiếm và xem chi tiết sản phẩm
+* Chat trực tiếp giữa người mua và người bán
+
+### Seller Features
+
+* Quản lý sản phẩm cá nhân
+* Theo dõi đơn hàng bán ra
 
 ### Admin Features
 
-* Separate admin interface
-* View daily and monthly revenue
-* Track number of listings created per day
-* Manage users (activate, deactivate, ban)
-* Moderate and manage camera listings
-* View transaction statistics and system reports
+* Duyệt bài đăng sản phẩm
+* Quản lý người dùng
+* Theo dõi doanh thu theo ngày
 
 ---
 
-## Security Features 🔐
+## 🔐 Security Features
 
-* Password hashing using bcrypt
-* JWT authentication with access and refresh tokens
-* Role-based access control (RBAC)
-* Route protection using guards
-* Input validation using class-validator
-* SQL Injection prevention via TypeORM
-* XSS and CSRF protection
-* Secure HTTP headers
-* Rate limiting for sensitive endpoints
-* Environment variable-based configuration
-* No sensitive data stored on the client
+* Bcrypt password hashing (10 salt rounds)
+* JWT Access Token (15 phút)
+* JWT Refresh Token (7 ngày)
+* Role-based access control (Guards)
+* Input validation (class-validator)
+* Rate limiting
+* CORS configuration
 
 ---
 
-## Real-time Chat System 💬
+## 🗂️ Project Structure
 
-* WebSocket-based private chat between buyers and sellers
-* JWT authentication for WebSocket connections
-* Persistent chat messages stored in the database
-* Access control to prevent unauthorized users from joining chat rooms
-
----
-
-## System Architecture 🏗️
-
-The frontend is built with Next.js and communicates with the backend through REST APIs and WebSocket connections. The backend is implemented using NestJS with a modular architecture that separates controllers, services, and modules. TypeORM is used to manage database entities and relationships.
-
----
-
-## Database Design 🗄️
-
-The system uses a relational database with the following main entities:
-
-* User
-* Camera
-* Order
-* Transaction
-* ChatRoom
-* ChatMessage
-* Admin
-
-Entity relationships, indexing, and soft deletion are applied to ensure performance and data integrity.
+```
+my_web/
+├── backend/               # NestJS Backend
+│   ├── src/
+│   │   ├── auth/          # Auth + JWT
+│   │   ├── products/      # Products CRUD
+│   │   ├── entities/      # TypeORM Entities
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   ├── swagger.yaml       # Swagger API document
+│   ├── .env
+│   └── package.json
+│
+├── frontend/              # Next.js Frontend
+│   ├── src/
+│   │   ├── app/           # App Router pages
+│   │   ├── contexts/      # Auth Context
+│   │   └── lib/           # Axios client
+│   └── package.json
+│
+├── database/              # SQL legacy (đã migrate)
+├── docker-compose.yml
+└── README.md
+```
 
 ---
 
-## Installation and Setup ⚙️
+## 🚀 Hướng Dẫn Chạy Project
 
-1. Clone the repository
-2. Install dependencies for both frontend and backend
-3. Configure environment variables
-4. Run database migrations
-5. Start backend and frontend servers
+### 1. Yêu cầu môi trường
 
-Detailed setup instructions may vary depending on the deployment environment.
+Đảm bảo máy đã cài đặt:
 
----
+* Node.js v18+
+* npm
+* Docker & Docker Compose
 
-## Environment Variables 🌱
+Kiểm tra nhanh:
 
-The following environment variables are required:
-
-* DATABASE_URL
-* JWT_SECRET
-* JWT_REFRESH_SECRET
-* PORT
-
-Do not commit environment variable values to the repository.
+```bash
+node -v
+docker -v
+docker-compose -v
+```
 
 ---
 
-## Admin Account 🛡️
+### 2. Khởi chạy Database (PostgreSQL)
 
-Admin accounts are created through database seeding or manual setup. Admin access is restricted to authorized users only.
+Tại thư mục gốc project:
+
+```bash
+docker-compose up -d postgres
+```
+
+* Port: `5440`
+* Database: `camera_web`
+* Tables được tạo tự động bằng TypeORM
 
 ---
 
-## Project Status 📌
+### 3. Cài đặt & Chạy Backend (Port 3000)
 
-This project is developed for academic and learning purposes and can be extended for real-world applications.
+Mở terminal mới:
+
+```bash
+cd backend
+npm install
+npm run start:dev
+```
+
+Sau khi chạy thành công:
+
+* API: `http://localhost:3000/api`
+* Swagger UI (nếu bật): `http://localhost:3000/api/docs`
+* Swagger file: `backend/swagger.yaml`
 
 ---
 
-## Lic
+### 4. Cài đặt & Chạy Frontend (Port 3001)
 
-This project is licensed under the MIT License.
+Mở terminal khác:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+* Web: `http://localhost:3001`
+
+---
+
+## 🔑 Tài Khoản Demo
+
+* Không có tài khoản mặc định
+* Người dùng tự đăng ký tại:
+
+```
+/auth/register
+```
+
+Gợi ý Role:
+
+* Sell products
+* Buy and Sell
+
+Admin có thể set trực tiếp trong database.
+
+---
+
+## 🧪 Testing Guide
+
+### API Test (cURL)
+
+**Register:**
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "test@example.com",
+  "password": "123456",
+  "fullName": "Test User",
+  "role": "both"
+}'
+```
+
+**Login:**
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "test@example.com",
+  "password": "123456"
+}'
+```
+
+---
+
+## 📊 Database Schema
+
+* TypeORM synchronize: true (dev only)
+* Quan hệ chính:
+
+  * User → Product
+  * User → Order
+  * Order → OrderItem
+  * Order → Transaction
+  * ChatRoom → ChatMessage
+
+---
+
+## ⚠️ Notes
+
+* Chỉ dùng synchronize trong môi trường dev
+* Production cần:
+
+  * TypeORM migrations
+  * Đổi JWT secrets
+  * Logging & monitoring
+
+---
+
+## 📌 Project Status
+
+* Backend: Hoàn thành Auth + Products
+* Frontend: Auth + Product listing
+* Chat, Orders, Admin: đang phát triển
+
+---
+
+## 📄 License
+
+This project is for educational purposes only.
