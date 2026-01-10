@@ -1,119 +1,45 @@
-# CameraStore - Trang Web Bán Máy ảnh & Phụ kiện
+# C2C Camera Platform
 
-Ứng dụng web bán hàng máy ảnh và phụ kiện được xây dựng với React + Vite + PostgreSQL.
+Project E-Commerce mua bán máy ảnh (C2C) sử dụng **Next.js** (Frontend) và **NestJS** (Backend).
 
-## 🌟 Tính năng
+## 🚀 Hướng Dẫn Chạy Project
 
-- ⚡ React 18 + Vite
-- 🎨 Giao diện hiện đại với Tailwind CSS
-- 🗄️ PostgreSQL Database
-- 🐳 Docker Container
-- 📱 Responsive Design
-- 🛒 Giỏ hàng đầy đủ chức năng
-- 💳 Thanh toán và đặt hàng
-- 🔍 Tìm kiếm và lọc sản phẩm
+### 1. Yêu cầu
+- Node.js (v18+)
+- Docker & Docker Compose (để chạy database PostgreSQL)
 
-## 🛠️ Cài đặt
-
-### Yêu cầu
-- Node.js (phiên bản 16 trở lên)
-- Docker và Docker Compose
-- npm hoặc yarn
-
-### 1. Cài đặt dependencies
-
+### 2. Khởi chạy Database
+Chạy container PostgreSQL:
 ```bash
+docker-compose up -d postgres
+```
+
+### 3. Cài đặt & Chạy Backend (Cổng 3000)
+Mở một terminal mới:
+```bash
+cd backend
 npm install
+npm run start:dev
 ```
+- API chạy tại: `http://localhost:3000/api`
+- Swagger Docs (File): `backend/swagger.yaml`
 
-### 2. Khởi động Database
-
+### 4. Cài đặt & Chạy Frontend (Cổng 3001)
+Mở một terminal mới khác:
 ```bash
-# Khởi động PostgreSQL trong Docker
-npm run db:start
-
-# Xem logs database
-npm run db:logs
-
-# Dừng database
-npm run db:stop
-```
-
-### 3. Chạy ứng dụng
-
-```bash
-# Development mode
+cd frontend
+npm install
 npm run dev
-
-# Chạy cả frontend và backend
-npm run dev  # Frontend tại http://localhost:5176
-node server.js  # Backend tại http://localhost:3001
 ```
+- Web chạy tại: `http://localhost:3001` (hoặc 3000 nếu backend chưa chạy, nhưng thường Next.js sẽ tự đổi port nếu bận)
 
-## 📁 Cấu trúc Database
+## 🔑 Tài Khoản Demo
 
-### Bảng Products
-- id, name, description, price, category_id
-- image_emoji, stock, is_active
-- created_at, updated_at
+**Admin/User:**
+Bạn có thể tự đăng ký tài khoản mới tại trang Register (`/auth/register`).
+- Chọn Role "Sell products" hoặc "Buy and Sell" để có quyền đăng bán.
 
-### Bảng Categories
-- id, name, slug, icon
-- created_at, updated_at
-
-### Bảng Orders
-- id, customer_name, customer_phone, customer_email
-- customer_address, total_price, status
-- created_at, updated_at
-
-### Bảng Order Items
-- id, order_id, product_id, product_name
-- product_price, quantity, subtotal
-- created_at
-
-## 🔌 Kết nối Database
-
-**Thông tin kết nối:**
-- Host: localhost
-- Port: 5440
-- Database: camera_web
-- Username: postgres
-- Password: 12343
-
-Kết nối bằng DBeaver hoặc bất kỳ PostgreSQL client nào.
-
-## 📝 API Endpoints
-
-### Products
-- `GET /api/products` - Lấy tất cả sản phẩm
-- `GET /api/products/:id` - Lấy sản phẩm theo ID
-- Query params: `?category=&search=`
-
-### Categories
-- `GET /api/categories` - Lấy tất cả danh mục
-
-### Orders
-- `GET /api/orders` - Lấy tất cả đơn hàng
-- `GET /api/orders/:id` - Lấy đơn hàng theo ID
-- `POST /api/orders` - Tạo đơn hàng mới
-- `PATCH /api/orders/:id/status` - Cập nhật trạng thái đơn hàng
-
-## 🚀 Scripts
-
-```bash
-npm run dev              # Chạy development server
-npm run build            # Build cho production
-npm run preview          # Preview production build
-npm run db:start         # Khởi động database
-npm run db:stop          # Dừng database
-npm run db:restart       # Khởi động lại database
-npm run db:logs          # Xem logs database
-```
-
-## 📄 License
-
-MIT
-
----
-
-Happy coding! 🎉
+## 📂 Cấu Trúc
+- `backend/`: Mã nguồn NestJS
+- `frontend/`: Mã nguồn Next.js (App Router)
+- `database/`: Các script SQL cũ (đã chuyển sang TypeORM entities)

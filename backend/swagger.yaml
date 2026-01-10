@@ -1,0 +1,603 @@
+openapi: 3.0.0
+info:
+  title: C2C Camera Platform API
+  description: |
+    API documentation for the C2C Camera Platform.
+    
+    ## Architecture
+    - **Backend**: NestJS
+    - **Auth**: JWT (Access + Refresh)
+    - **Real-time**: Socket.IO (Chat)
+    
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@c2c-camera.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local Development Server
+
+tags:
+  - name: Auth
+    description: User authentication and session management
+  - name: Users
+    description: User profile management
+  - name: Products
+    description: Product listings and management
+  - name: Orders
+    description: Order processing and history
+  - name: Chat
+    description: Real-time messaging (WebSocket & History)
+  - name: Admin
+    description: System administration and moderation
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your access token
+
+  schemas:
+    # --- Entities ---
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [buyer, seller, both, admin]
+        reputation:
+          type: number
+        bankAccount:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        condition:
+          type: string
+          enum: [new, used]
+        stock:
+          type: integer
+        status:
+          type: string
+          enum: [draft, pending_approval, approved, rejected]
+        views:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+        seller:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        buyer:
+          $ref: '#/components/schemas/User'
+        seller:
+          $ref: '#/components/schemas/User'
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, paid, shipped, completed, cancelled]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+        quantity:
+          type: integer
+        price:
+          type: number
+
+    ChatRoom:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        lastMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        updatedAt:
+          type: string
+          format: date-time
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sender:
+          $ref: '#/components/schemas/User'
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- DTOs ---
+    RegisterDto:
+      type: object
+      required: [email, password, fullName]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [buyer, seller, both]
+          default: buyer
+        phone:
+          type: string
+
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    RefreshTokenDto:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+
+    CreateProductDto:
+      type: object
+      required: [name, price, condition]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        condition:
+          type: string
+          enum: [new, used]
+        stock:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+        categoryId:
+          type: integer
+
+    CreateOrderDto:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId:
+                type: integer
+              quantity:
+                type: integer
+        shippingAddress:
+          type: string
+        paymentMethod:
+          type: string
+
+    UpdateProductStatusDto:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+
+security:
+  - bearerAuth: []
+
+paths:
+  # --- AUTH ---
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Bad request (Email exists)
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenDto'
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout user
+      description: Invalidates the refresh token
+      responses:
+        '200':
+          description: Logged out successfully
+
+  # --- PRODUCTS ---
+  /products:
+    get:
+      tags: [Products]
+      summary: List all approved products
+      security: []
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name or description
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter by category ID or slug
+    
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+    post:
+      tags: [Products]
+      summary: Create new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '201':
+          description: Product created (Pending approval)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product details
+      description: Increments view count
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+
+    patch:
+      tags: [Products]
+      summary: Update product
+      description: Only owner can update. Status resets to pending if critical fields change.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '200':
+          description: Product updated
+
+    delete:
+      tags: [Products]
+      summary: Delete product
+      description: Only owner can delete
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product deleted
+
+  /products/seller/my-products:
+    get:
+      tags: [Products]
+      summary: Get my products (Seller)
+      responses:
+        '200':
+          description: List of seller's products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+  # --- PRODUCTS (ADMIN) ---
+  /products/{id}/status:
+    patch:
+      tags: [Admin]
+      summary: Moderate product
+      description: Approve or reject a product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductStatusDto'
+      responses:
+        '200':
+          description: Status updated
+
+  # --- ORDERS ---
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Create an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderDto'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /orders/my-orders:
+    get:
+      tags: [Orders]
+      summary: Get order history (as Buyer)
+      responses:
+        '200':
+          description: List of purchases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  /orders/seller:
+    get:
+      tags: [Orders]
+      summary: Get incoming orders (as Seller)
+      responses:
+        '200':
+          description: List of sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  # --- CHAT ---
+  /chat/rooms:
+    get:
+      tags: [Chat]
+      summary: Get chat rooms
+      description: List of active conversations
+      responses:
+        '200':
+          description: List of chat rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatRoom'
+
+  /chat/messages/{roomId}:
+    get:
+      tags: [Chat]
+      summary: Get message history
+      parameters:
+        - in: path
+          name: roomId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Message history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessage'
+
+  # --- ADMIN ---
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /admin/products:
+    get:
+      tags: [Admin]
+      summary: Product moderation queue
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            default: pending_approval
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+  /admin/revenue/daily:
+    get:
+      tags: [Admin]
+      summary: Daily revenue report
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                  totalRevenue:
+                    type: number
+                  totalOrders:
+                    type: integer
