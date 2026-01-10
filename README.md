@@ -1,6 +1,6 @@
-# C2C Camera Platform
+# C2C Camera Platform 📷
 
-## Overview
+## Overview 📝
 
 C2C Camera Platform is a full-stack consumer-to-consumer web application that enables users to buy and sell camera equipment directly with each other. Users can create listings, manage transactions, and communicate in real time through an integrated chat system. A separate admin panel is provided to monitor platform activity, manage content, and track revenue.
 
@@ -8,7 +8,7 @@ The project focuses on security, scalability, and clean architecture, following 
 
 ---
 
-## Tech Stack
+## Tech Stack 🛠️
 
 ### Frontend
 
@@ -30,7 +30,7 @@ The project focuses on security, scalability, and clean architecture, following 
 
 ---
 
-## Main Features
+## Main Features ✨
 
 ### User Features
 
@@ -53,7 +53,7 @@ The project focuses on security, scalability, and clean architecture, following 
 
 ---
 
-## Security Features
+## Security Features 🔐
 
 * Password hashing using bcrypt
 * JWT authentication with access and refresh tokens
@@ -69,7 +69,7 @@ The project focuses on security, scalability, and clean architecture, following 
 
 ---
 
-## Real-time Chat System
+## Real-time Chat System 💬
 
 * WebSocket-based private chat between buyers and sellers
 * JWT authentication for WebSocket connections
@@ -78,13 +78,13 @@ The project focuses on security, scalability, and clean architecture, following 
 
 ---
 
-## System Architecture
+## System Architecture 🏗️
 
 The frontend is built with Next.js and communicates with the backend through REST APIs and WebSocket connections. The backend is implemented using NestJS with a modular architecture that separates controllers, services, and modules. TypeORM is used to manage database entities and relationships.
 
 ---
 
-## Database Design
+## Database Design 🗄️
 
 The system uses a relational database with the following main entities:
 
@@ -100,7 +100,7 @@ Entity relationships, indexing, and soft deletion are applied to ensure performa
 
 ---
 
-## Installation and Setup
+## Installation and Setup ⚙️
 
 1. Clone the repository
 2. Install dependencies for both frontend and backend
@@ -112,7 +112,7 @@ Detailed setup instructions may vary depending on the deployment environment.
 
 ---
 
-## Environment Variables
+## Environment Variables 🌱
 
 The following environment variables are required:
 
@@ -125,18 +125,18 @@ Do not commit environment variable values to the repository.
 
 ---
 
-## Admin Account
+## Admin Account 🛡️
 
 Admin accounts are created through database seeding or manual setup. Admin access is restricted to authorized users only.
 
 ---
 
-## Project Status
+## Project Status 📌
 
 This project is developed for academic and learning purposes and can be extended for real-world applications.
 
 ---
 
-## License
+## Lic
 
 This project is licensed under the MIT License.
