@@ -6,11 +6,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
 import { Product } from './entities/product.entity';
+import { Category } from './entities/category.entity';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Transaction } from './entities/transaction.entity';
 import { ChatRoom } from './entities/chat-room.entity';
 import { ChatMessage } from './entities/chat-message.entity';
+import { Review } from './entities/review.entity';
+import { Payment } from './entities/payment.entity';
+import { Notification } from './entities/notification.entity';
+import { Promotion } from './entities/promotion.entity';
+import { Dispute } from './entities/dispute.entity';
+import { Subscription } from './entities/subscription.entity';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 
@@ -24,14 +31,29 @@ import { ProductsModule } from './products/products.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get('DATABASE_HOST'),
-        port: config.get('DATABASE_PORT'),
-        username: config.get('DATABASE_USER'),
-        password: config.get('DATABASE_PASSWORD'),
-        database: config.get('DATABASE_NAME'),
-        entities: [User, Product, Order, OrderItem, Transaction, ChatRoom, ChatMessage],
-        synchronize: true, // Set to false in production
-        logging: false,
+        host: config.get<string>('DATABASE_HOST'),
+        port: parseInt(config.get<string>('DATABASE_PORT') || '5432', 10),
+        username: config.get<string>('DATABASE_USER'),
+        password: config.get<string>('DATABASE_PASSWORD'),
+        database: config.get<string>('DATABASE_NAME'),
+        entities: [
+          User,
+          Product,
+          Category,
+          Order,
+          OrderItem,
+          Transaction,
+          ChatRoom,
+          ChatMessage,
+          Review,
+          Payment,
+          Notification,
+          Promotion,
+          Dispute,
+          Subscription,
+        ],
+        synchronize: process.env.NODE_ENV !== 'production', // Auto-sync in development only
+        logging: process.env.NODE_ENV === 'development',
       }),
     }),
     ThrottlerModule.forRoot([

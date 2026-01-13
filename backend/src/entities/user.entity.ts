@@ -2,6 +2,10 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Product } from './product.entity';
 import { Order } from './order.entity';
 import { ChatMessage } from './chat-message.entity';
+import { Review } from './review.entity';
+import { Notification } from './notification.entity';
+import { Subscription } from './subscription.entity';
+import { Promotion } from './promotion.entity';
 
 export enum UserRole {
     BUYER = 'buyer',
@@ -18,13 +22,13 @@ export class User {
     @Column({ unique: true })
     email!: string;
 
-    @Column()
-    password!: string;
+    @Column({ name: 'password_hash', type: 'varchar', nullable: true })
+    password!: string | null;
 
-    @Column({ name: 'full_name', nullable: true })
+    @Column({ name: 'full_name', type: 'varchar', nullable: true })
     fullName!: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     phone!: string;
 
     @Column({
@@ -34,20 +38,23 @@ export class User {
     })
     role!: UserRole;
 
-    @Column({ name: 'avatar_url', nullable: true })
-    avatarUrl!: string;
+    @Column({ name: 'avatar_url', type: 'text', nullable: true })
+    avatarUrl!: string | null;
 
     @Column({ type: 'text', nullable: true })
     address!: string;
 
-    @Column({ name: 'bank_account', nullable: true })
+    @Column({ name: 'bank_account', type: 'varchar', nullable: true })
     bankAccount!: string;
 
-    @Column({ name: 'bank_name', nullable: true })
+    @Column({ name: 'bank_name', type: 'varchar', nullable: true })
     bankName!: string;
 
     @Column({ default: false })
     verified!: boolean;
+
+    @Column({ name: 'verification_code', type: 'varchar', length: 10, nullable: true })
+    verificationCode!: string | null;
 
     @Column({ name: 'reputation_score', type: 'decimal', precision: 3, scale: 2, default: 5.0 })
     reputationScore!: number;
@@ -61,8 +68,11 @@ export class User {
     @Column({ name: 'is_active', default: true })
     isActive!: boolean;
 
-    @Column({ name: 'refresh_token', nullable: true })
+    @Column({ name: 'refresh_token', type: 'text', nullable: true })
     refreshToken!: string | null;
+
+    @Column({ name: 'google_id', type: 'varchar', nullable: true, unique: true })
+    googleId!: string | null;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
@@ -81,4 +91,19 @@ export class User {
 
     @OneToMany(() => ChatMessage, (message) => message.sender)
     messages!: ChatMessage[];
+
+    @OneToMany(() => Review, (review) => review.reviewer)
+    reviewsGiven!: Review[];
+
+    @OneToMany(() => Review, (review) => review.reviewedUser)
+    reviewsReceived!: Review[];
+
+    @OneToMany(() => Notification, (notification) => notification.user)
+    notifications!: Notification[];
+
+    @OneToMany(() => Subscription, (subscription) => subscription.user)
+    subscriptions!: Subscription[];
+
+    @OneToMany(() => Promotion, (promotion) => promotion.seller)
+    promotions!: Promotion[];
 }

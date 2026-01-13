@@ -10,6 +10,8 @@ import {
     UseGuards,
     Req,
     Request,
+    HttpException,
+    HttpStatus,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
@@ -39,26 +41,51 @@ export class ProductsController {
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    create(@Req() req: Request & { user: any }, @Body() dto: CreateProductDto) {
-        return this.productsService.create(req.user.userId, dto);
+    async create(@Req() req: Request & { user: any }, @Body() dto: CreateProductDto) {
+        try {
+            const userId = req.user.userId || req.user.sub;
+            console.log('Create product request:', { userId, user: req.user, dto });
+            const product = await this.productsService.create(userId, dto);
+            return product;
+        } catch (error: any) {
+            console.error('Error in create product controller:', error);
+            console.error('Error stack:', error.stack);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                detail: error.detail,
+                constraint: error.constraint,
+                table: error.table,
+            });
+            
+            // Return more detailed error message
+            const errorMessage = error.detail || error.message || 'Failed to create product';
+            throw new HttpException(
+                { message: errorMessage, error: error.code || 'INTERNAL_ERROR' },
+                error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
     update(@Param('id') id: string, @Req() req: Request & { user: any }, @Body() dto: UpdateProductDto) {
-        return this.productsService.update(+id, req.user.userId, dto);
+        const userId = req.user.userId || req.user.sub;
+        return this.productsService.update(+id, userId, dto);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
     remove(@Param('id') id: string, @Req() req: Request & { user: any }) {
-        return this.productsService.remove(+id, req.user.userId);
+        const userId = req.user.userId || req.user.sub;
+        return this.productsService.remove(+id, userId);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get('seller/my-products')
     myProducts(@Req() req: Request & { user: any }) {
-        return this.productsService.findByUser(req.user.userId);
+        const userId = req.user.userId || req.user.sub;
+        return this.productsService.findByUser(userId);
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

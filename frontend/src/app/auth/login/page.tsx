@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn } from 'lucide-react';
+import GoogleSignIn from '@/components/GoogleSignIn';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -11,7 +12,14 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { login } = useAuth();
+    const { login, user, loading: authLoading } = useAuth();
+
+    // Redirect to home if already logged in
+    useEffect(() => {
+        if (!authLoading && user) {
+            router.push('/');
+        }
+    }, [user, authLoading, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,7 +30,7 @@ export default function LoginPage() {
             await login(email, password);
             router.push('/');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Login failed');
+            setError(err.response?.data?.message || err.message || 'Login failed. Please check your credentials.');
         } finally {
             setLoading(false);
         }
@@ -55,7 +63,7 @@ export default function LoginPage() {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
                             placeholder="you@example.com"
                         />
                     </div>
@@ -69,7 +77,7 @@ export default function LoginPage() {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
                             placeholder="••••••••"
                         />
                     </div>
@@ -82,6 +90,20 @@ export default function LoginPage() {
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>
+
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+                    <div className="mt-4 flex justify-center">
+                        <GoogleSignIn text="signin_with" />
+                    </div>
+                </div>
 
                 <div className="mt-6 text-center">
                     <p className="text-gray-600">

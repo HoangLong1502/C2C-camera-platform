@@ -22,7 +22,7 @@ ON CONFLICT (slug) DO NOTHING;
 
 -- Create Products table
 CREATE TABLE IF NOT EXISTS products (
-    id SERIAL PRIMARY KEY DEFAULT nextval('products_id_seq'),
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(12, 2) NOT NULL,

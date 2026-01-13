@@ -2,6 +2,9 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { User } from './user.entity';
 import { OrderItem } from './order-item.entity';
 import { Transaction } from './transaction.entity';
+import { Review } from './review.entity';
+import { Payment } from './payment.entity';
+import { Dispute } from './dispute.entity';
 
 export enum OrderStatus {
     PENDING = 'pending',
@@ -64,10 +67,10 @@ export class Order {
     })
     paymentStatus!: PaymentStatus;
 
-    @Column({ name: 'payment_method', nullable: true })
+    @Column({ name: 'payment_method', type: 'varchar', nullable: true })
     paymentMethod!: string;
 
-    @Column({ name: 'tracking_number', nullable: true })
+    @Column({ name: 'tracking_number', type: 'varchar', nullable: true })
     trackingNumber!: string;
 
     @Column({ name: 'estimated_delivery', type: 'date', nullable: true })
@@ -89,6 +92,15 @@ export class Order {
 
     @OneToMany(() => Transaction, (transaction) => transaction.order)
     transactions: Transaction[];
+
+    @OneToMany(() => Review, (review) => review.order)
+    reviews: Review[];
+
+    @OneToMany(() => Payment, (payment) => payment.order)
+    payments: Payment[];
+
+    @OneToMany(() => Dispute, (dispute) => dispute.order)
+    disputes: Dispute[];
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

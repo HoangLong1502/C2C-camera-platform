@@ -1,4 +1,5 @@
 import { IsString, IsNumber, IsOptional, IsEnum, IsArray, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ProductStatus, ProductCondition } from '../../entities/product.entity';
 
 export class CreateProductDto {
@@ -8,30 +9,30 @@ export class CreateProductDto {
     @IsString()
     description: string;
 
-    @IsNumber()
+    @IsNumber({}, { message: 'Price must be a number' })
+    @Type(() => Number)
     @Min(0)
     price: number;
 
     @IsNumber()
-    @IsOptional()
-    categoryId?: number;
+    @Type(() => Number)
+    categoryId: number;
 
     @IsArray()
     @IsOptional()
     images?: string[];
 
     @IsEnum(ProductCondition)
-    @IsOptional()
-    condition?: ProductCondition;
+    condition: ProductCondition;
 
     @IsNumber()
-    @Min(0)
     @IsOptional()
+    @Type(() => Number)
+    @Min(0)
     stock?: number;
 
     @IsString()
-    @IsOptional()
-    location?: string;
+    location: string;
 }
 
 export class UpdateProductDto {

@@ -22,14 +22,20 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-    @IsEmail()
+    @IsEmail({}, { message: 'Please provide a valid email address' })
     email: string;
 
     @IsString()
+    @MinLength(1, { message: 'Password is required' })
     password: string;
 }
 
 export class RefreshTokenDto {
     @IsString()
     refreshToken: string;
+}
+
+export class GoogleAuthDto {
+    @IsString()
+    token: string;
 }

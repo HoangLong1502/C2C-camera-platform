@@ -1,5 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './user.entity';
+import { Category } from './category.entity';
+import { Review } from './review.entity';
+import { Promotion } from './promotion.entity';
 
 export enum ProductStatus {
     DRAFT = 'draft',
@@ -11,9 +14,11 @@ export enum ProductStatus {
 }
 
 export enum ProductCondition {
-    NEW = 'new',
-    USED = 'used',
-    REFURBISHED = 'refurbished',
+    USED = 'used',           // Đã qua sử dụng
+    NEW = 'new',             // Mới
+    LIKE_NEW = 'like_new',   // Như mới
+    OLD = 'old',             // Cũ
+    DAMAGED = 'damaged',     // Nát
 }
 
 @Entity('products')
@@ -33,7 +38,7 @@ export class Product {
     @Column({ name: 'category_id', nullable: true })
     categoryId: number;
 
-    @Column('simple-array', { nullable: true })
+    @Column({ type: 'jsonb', nullable: true })
     images: string[];
 
     @Column({
@@ -46,14 +51,14 @@ export class Product {
     @Column({
         type: 'enum',
         enum: ProductStatus,
-        default: ProductStatus.PENDING_APPROVAL,
+        default: ProductStatus.APPROVED, // Auto-approve by default, moderation will be added later
     })
     status: ProductStatus;
 
     @Column({ default: 0 })
     stock: number;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     location: string;
 
     @Column({ default: 0 })
@@ -71,12 +76,25 @@ export class Product {
     @Column({ default: false })
     featured: boolean;
 
+    @Column({ name: 'premium_promotion', default: false })
+    premiumPromotion: boolean;
+
     @Column({ name: 'seller_id' })
     sellerId: number;
 
     @ManyToOne(() => User, (user) => user.products)
     @JoinColumn({ name: 'seller_id' })
     seller: User;
+
+    @ManyToOne(() => Category, (category) => category.products, { nullable: true })
+    @JoinColumn({ name: 'category_id' })
+    category: Category;
+
+    @OneToMany(() => Review, (review) => review.product)
+    reviews: Review[];
+
+    @OneToMany(() => Promotion, (promotion) => promotion.product)
+    promotions: Promotion[];
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

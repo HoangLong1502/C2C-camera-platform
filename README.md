@@ -1,45 +1,125 @@
-# C2C Camera Platform
+# Camera Store Web Application
 
-Project E-Commerce mua bán máy ảnh (C2C) sử dụng **Next.js** (Frontend) và **NestJS** (Backend).
+Full-stack e-commerce application for camera marketplace.
 
-## 🚀 Hướng Dẫn Chạy Project
+## 🚀 Quick Start
 
-### 1. Yêu cầu
-- Node.js (v18+)
-- Docker & Docker Compose (để chạy database PostgreSQL)
+### Prerequisites
+- Node.js 18+
+- Docker Desktop
+- npm or yarn
 
-### 2. Khởi chạy Database
-Chạy container PostgreSQL:
+### Start Everything
+
+**Windows:**
 ```bash
-docker-compose up -d postgres
+FINAL.bat
 ```
 
-### 3. Cài đặt & Chạy Backend (Cổng 3000)
-Mở một terminal mới:
+**Manual:**
 ```bash
+# 1. Start database
+docker-compose up -d
+
+# 2. Setup database
 cd backend
 npm install
+node setup-database.js
 npm run start:dev
-```
-- API chạy tại: `http://localhost:3000/api`
-- Swagger Docs (File): `backend/swagger.yaml`
 
-### 4. Cài đặt & Chạy Frontend (Cổng 3001)
-Mở một terminal mới khác:
-```bash
+# 3. Start frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
-- Web chạy tại: `http://localhost:3001` (hoặc 3000 nếu backend chưa chạy, nhưng thường Next.js sẽ tự đổi port nếu bận)
 
-## 🔑 Tài Khoản Demo
+## 📁 Project Structure
 
-**Admin/User:**
-Bạn có thể tự đăng ký tài khoản mới tại trang Register (`/auth/register`).
-- Chọn Role "Sell products" hoặc "Buy and Sell" để có quyền đăng bán.
+```
+my_web/
+├── backend/          # NestJS API
+├── frontend/         # Next.js App
+├── database/         # Database config
+├── docker-compose.yml
+└── FINAL.bat         # Start everything
+```
 
-## 📂 Cấu Trúc
-- `backend/`: Mã nguồn NestJS
-- `frontend/`: Mã nguồn Next.js (App Router)
-- `database/`: Các script SQL cũ (đã chuyển sang TypeORM entities)
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+Create `backend/.env` (or copy from `backend/env.example`):
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5440
+DATABASE_USER=postgres
+DATABASE_PASSWORD=12343
+DATABASE_NAME=camera_web
+
+PORT=3001
+JWT_SECRET=your-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret
+```
+
+### Frontend
+
+Frontend automatically connects to backend at `http://localhost:3001/api`
+
+## 🌐 URLs
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001/api
+- **Database**: localhost:5440
+
+## 🛠️ Troubleshooting
+
+### Database Issues
+
+**Option 1: Use batch script**
+```bash
+setup-database.bat
+```
+
+**Option 2: Use npm script**
+```bash
+npm run setup
+```
+
+**Option 3: Manual**
+```bash
+cd backend
+node setup-database.js
+```
+
+### Check Health
+```bash
+node check-health.js
+```
+
+### Reset Everything
+```bash
+# Stop all
+docker-compose down
+taskkill /F /IM node.exe
+
+# Restart
+FINAL.bat
+```
+
+## 📝 Features
+
+- User authentication (JWT)
+- Product management
+- Order system
+- Category management
+- Admin dashboard
+
+## 🧪 Development
+
+Backend runs on port 3001, Frontend on port 3000.
+
+TypeORM synchronizes database schema automatically in development.
+
+## 🎯 Default Accounts
+
+- **Admin**: admin@admin.com / 123

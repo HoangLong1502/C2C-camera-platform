@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "C2C E-Commerce Platform",
-  description: "Buy and sell products with ease",
+  title: "C2C Camera Platform",
+  description: "Buy and sell cameras with ease",
 };
 
 export default function RootLayout({

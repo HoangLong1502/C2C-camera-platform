@@ -15,6 +15,7 @@ interface AuthContextType {
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (data: any) => Promise<void>;
+    loginWithGoogle: (token: string) => Promise<void>;
     logout: () => void;
 }
 
@@ -24,27 +25,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const fetchUserData = async () => {
+        try {
+            // Try to get user from API
+            const { data } = await apiClient.get('/auth/me');
+            setUser(data);
+        } catch (error: any) {
+            // If API fails, clear storage
+            if (error.response?.status === 401) {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+            }
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        // Check if user is logged in
+        // Check if user is logged in and fetch user data on mount
         const token = localStorage.getItem('accessToken');
         if (token) {
-            // Optionally fetch user data
-            setLoading(false);
+            // Fetch user data from API
+            fetchUserData();
         } else {
             setLoading(false);
         }
     }, []);
 
     const login = async (email: string, password: string) => {
-        const { data } = await apiClient.post('/auth/login', { email, password });
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        setUser(data.user);
+        try {
+            const { data } = await apiClient.post('/auth/login', { email, password });
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            setUser(data.user);
+        } catch (error: any) {
+            const message = error.response?.data?.message || error.message || 'Login failed';
+            throw new Error(message);
+        }
     };
 
     const register = async (formData: any) => {
-        const { data } = await apiClient.post('/auth/register', formData);
-        setUser(data);
+        try {
+            await apiClient.post('/auth/register', formData);
+            // Registration successful - user will need to login
+            // After registration, automatically login
+            await login(formData.email, formData.password);
+        } catch (error: any) {
+            const message = error.response?.data?.message || error.message || 'Registration failed';
+            throw new Error(message);
+        }
+    };
+
+    const loginWithGoogle = async (token: string) => {
+        try {
+            const { data } = await apiClient.post('/auth/google', { token });
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            setUser(data.user);
+        } catch (error: any) {
+            const message = error.response?.data?.message || error.message || 'Google login failed';
+            throw new Error(message);
+        }
     };
 
     const logout = () => {
@@ -55,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, logout }}>
             {children}
         </AuthContext.Provider>
     );

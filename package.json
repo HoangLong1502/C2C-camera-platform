@@ -1,0 +1,26 @@
+{
+  "name": "camera-store",
+  "version": "1.0.0",
+  "description": "Camera Store Web Application",
+  "scripts": {
+    "start": "FINAL.bat",
+    "dev": "concurrently \"cd backend && npm run start:dev\" \"cd frontend && npm run dev\"",
+    "setup": "cd backend && node setup-database.js",
+    "health": "node check-health.js",
+    "drop-tables": "cd backend && node drop-all-tables.js",
+    "reset-db": "cd backend && node reset-database.js",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:restart": "docker-compose restart"
+  },
+  "keywords": [
+    "camera",
+    "marketplace",
+    "ecommerce"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}
