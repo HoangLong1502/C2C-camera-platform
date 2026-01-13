@@ -1,125 +1,242 @@
-# Camera Store Web Application
+# C2C Camera Platform 📷
 
-Full-stack e-commerce application for camera marketplace.
+Nền tảng thương mại điện tử **C2C mua bán máy ảnh**, cho phép người dùng đăng bán, mua hàng và trò chuyện trực tiếp giữa người mua – người bán.
 
-## 🚀 Quick Start
+Project được xây dựng theo kiến trúc **Fullstack hiện đại**, sử dụng **Next.js** cho Frontend và **NestJS** cho Backend, áp dụng các tiêu chuẩn bảo mật và tổ chức code theo best practices.
 
-### Prerequisites
-- Node.js 18+
-- Docker Desktop
-- npm or yarn
+---
 
-### Start Everything
+## 🏗️ Architecture Overview
 
-**Windows:**
-```bash
-FINAL.bat
+### Backend (NestJS)
+
+* Framework: NestJS + TypeScript
+* Database: PostgreSQL (TypeORM)
+* Authentication: JWT (Access Token + Refresh Token)
+* Password Hashing: bcrypt
+* API Base URL: `http://localhost:3000/api`
+* Port: 3000
+
+### Frontend (Next.js)
+
+* Framework: Next.js 16 (App Router)
+* Styling: Tailwind CSS v4
+* State Management: React Context (Auth)
+* HTTP Client: Axios (interceptors + token refresh)
+* Port: 3001 (tự động tăng nếu bận)
+
+---
+
+## ✨ Main Features
+
+### User Features
+
+* Đăng ký / đăng nhập người dùng
+* Phân quyền: Buyer / Seller / Both / Admin
+* Đăng bán sản phẩm máy ảnh
+* Tìm kiếm và xem chi tiết sản phẩm
+* Chat trực tiếp giữa người mua và người bán
+
+### Seller Features
+
+* Quản lý sản phẩm cá nhân
+* Theo dõi đơn hàng bán ra
+
+### Admin Features
+
+* Duyệt bài đăng sản phẩm
+* Quản lý người dùng
+* Theo dõi doanh thu theo ngày
+
+---
+
+## 🔐 Security Features
+
+* Bcrypt password hashing (10 salt rounds)
+* JWT Access Token (15 phút)
+* JWT Refresh Token (7 ngày)
+* Role-based access control (Guards)
+* Input validation (class-validator)
+* Rate limiting
+* CORS configuration
+
+---
+
+## 🗂️ Project Structure
+
+```
+my_web/
+├── backend/               # NestJS Backend
+│   ├── src/
+│   │   ├── auth/          # Auth + JWT
+│   │   ├── products/      # Products CRUD
+│   │   ├── entities/      # TypeORM Entities
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   ├── swagger.yaml       # Swagger API document
+│   ├── .env
+│   └── package.json
+│
+├── frontend/              # Next.js Frontend
+│   ├── src/
+│   │   ├── app/           # App Router pages
+│   │   ├── contexts/      # Auth Context
+│   │   └── lib/           # Axios client
+│   └── package.json
+│
+├── database/              # SQL legacy (đã migrate)
+├── docker-compose.yml
+└── README.md
 ```
 
-**Manual:**
-```bash
-# 1. Start database
-docker-compose up -d
+---
 
-# 2. Setup database
+## 🚀 Hướng Dẫn Chạy Project
+
+### 1. Yêu cầu môi trường
+
+Đảm bảo máy đã cài đặt:
+
+* Node.js v18+
+* npm
+* Docker & Docker Compose
+
+Kiểm tra nhanh:
+
+```bash
+node -v
+docker -v
+docker-compose -v
+```
+
+---
+
+### 2. Khởi chạy Database (PostgreSQL)
+
+Tại thư mục gốc project:
+
+```bash
+docker-compose up -d postgres
+```
+
+* Port: `5440`
+* Database: `camera_web`
+* Tables được tạo tự động bằng TypeORM
+
+---
+
+### 3. Cài đặt & Chạy Backend (Port 3000)
+
+Mở terminal mới:
+
+```bash
 cd backend
 npm install
-node setup-database.js
 npm run start:dev
+```
 
-# 3. Start frontend (new terminal)
+Sau khi chạy thành công:
+
+* API: `http://localhost:3000/api`
+* Swagger UI (nếu bật): `http://localhost:3000/api/docs`
+* Swagger file: `backend/swagger.yaml`
+
+---
+
+### 4. Cài đặt & Chạy Frontend (Port 3001)
+
+Mở terminal khác:
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-## 📁 Project Structure
+* Web: `http://localhost:3001`
+
+---
+
+## 🔑 Tài Khoản Demo
+
+* Không có tài khoản mặc định
+* Người dùng tự đăng ký tại:
 
 ```
-my_web/
-├── backend/          # NestJS API
-├── frontend/         # Next.js App
-├── database/         # Database config
-├── docker-compose.yml
-└── FINAL.bat         # Start everything
+/auth/register
 ```
 
-## 🔧 Configuration
+Gợi ý Role:
 
-### Backend Environment Variables
+* Sell products
+* Buy and Sell
 
-Create `backend/.env` (or copy from `backend/env.example`):
-```env
-DATABASE_HOST=localhost
-DATABASE_PORT=5440
-DATABASE_USER=postgres
-DATABASE_PASSWORD=12343
-DATABASE_NAME=camera_web
+Admin có thể set trực tiếp trong database.
 
-PORT=3001
-JWT_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret
-```
+---
 
-### Frontend
+## 🧪 Testing Guide
 
-Frontend automatically connects to backend at `http://localhost:3001/api`
+### API Test (cURL)
 
-## 🌐 URLs
+**Register:**
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001/api
-- **Database**: localhost:5440
-
-## 🛠️ Troubleshooting
-
-### Database Issues
-
-**Option 1: Use batch script**
 ```bash
-setup-database.bat
+curl -X POST http://localhost:3000/api/auth/register \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "test@example.com",
+  "password": "123456",
+  "fullName": "Test User",
+  "role": "both"
+}'
 ```
 
-**Option 2: Use npm script**
+**Login:**
+
 ```bash
-npm run setup
+curl -X POST http://localhost:3000/api/auth/login \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "test@example.com",
+  "password": "123456"
+}'
 ```
 
-**Option 3: Manual**
-```bash
-cd backend
-node setup-database.js
-```
+---
 
-### Check Health
-```bash
-node check-health.js
-```
+## 📊 Database Schema
 
-### Reset Everything
-```bash
-# Stop all
-docker-compose down
-taskkill /F /IM node.exe
+* TypeORM synchronize: true (dev only)
+* Quan hệ chính:
 
-# Restart
-FINAL.bat
-```
+  * User → Product
+  * User → Order
+  * Order → OrderItem
+  * Order → Transaction
+  * ChatRoom → ChatMessage
 
-## 📝 Features
+---
 
-- User authentication (JWT)
-- Product management
-- Order system
-- Category management
-- Admin dashboard
+## ⚠️ Notes
 
-## 🧪 Development
+* Chỉ dùng synchronize trong môi trường dev
+* Production cần:
 
-Backend runs on port 3001, Frontend on port 3000.
+  * TypeORM migrations
+  * Đổi JWT secrets
+  * Logging & monitoring
 
-TypeORM synchronizes database schema automatically in development.
+---
 
-## 🎯 Default Accounts
+## 📌 Project Status
 
-- **Admin**: admin@admin.com / 123
+* Backend: Hoàn thành Auth + Products
+* Frontend: Auth + Product listing
+* Chat, Orders, Admin: đang phát triển
+
+---
+
+## 📄 License
+
+This project is for educational purposes only.
