@@ -14,8 +14,8 @@ Project được xây dựng theo kiến trúc **Fullstack hiện đại**, sử
 * Database: PostgreSQL (TypeORM)
 * Authentication: JWT (Access Token + Refresh Token)
 * Password Hashing: bcrypt
-* API Base URL: `http://localhost:3000/api`
-* Port: 3000
+* API Base URL: `http://localhost:3002/api`
+* Port: 3002
 
 ### Frontend (Next.js)
 
@@ -23,7 +23,7 @@ Project được xây dựng theo kiến trúc **Fullstack hiện đại**, sử
 * Styling: Tailwind CSS v4
 * State Management: React Context (Auth)
 * HTTP Client: Axios (interceptors + token refresh)
-* Port: 3001 (tự động tăng nếu bận)
+* Port: 3000
 
 ---
 
@@ -31,16 +31,21 @@ Project được xây dựng theo kiến trúc **Fullstack hiện đại**, sử
 
 ### User Features
 
-* Đăng ký / đăng nhập người dùng
+* Đăng ký / đăng nhập người dùng (Email/Password và Google OAuth)
 * Phân quyền: Buyer / Seller / Both / Admin
-* Đăng bán sản phẩm máy ảnh
-* Tìm kiếm và xem chi tiết sản phẩm
-* Chat trực tiếp giữa người mua và người bán
+* Đăng bán sản phẩm máy ảnh với hình ảnh (base64)
+* Tìm kiếm và lọc sản phẩm theo danh mục (Máy ảnh, Ống kính, Phụ kiện)
+* Xem chi tiết sản phẩm
+* Quản lý sản phẩm của mình
 
 ### Seller Features
 
-* Quản lý sản phẩm cá nhân
-* Theo dõi đơn hàng bán ra
+* Quản lý sản phẩm cá nhân (CRUD)
+* Đăng sản phẩm với:
+  - Chọn loại sản phẩm (Máy ảnh, Ống kính, Khác)
+  - Chọn độ mới (Đã qua sử dụng, Mới, Như mới, Cũ, Nát)
+  - Upload nhiều hình ảnh
+  - Thông tin đầy đủ (tên, mô tả, giá, số lượng, địa điểm)
 
 ### Admin Features
 
@@ -68,7 +73,7 @@ Project được xây dựng theo kiến trúc **Fullstack hiện đại**, sử
 my_web/
 ├── backend/               # NestJS Backend
 │   ├── src/
-│   │   ├── auth/          # Auth + JWT
+│   │   ├── auth/          # Auth + JWT + Google OAuth
 │   │   ├── products/      # Products CRUD
 │   │   ├── entities/      # TypeORM Entities
 │   │   ├── app.module.ts
@@ -80,11 +85,17 @@ my_web/
 ├── frontend/              # Next.js Frontend
 │   ├── src/
 │   │   ├── app/           # App Router pages
+│   │   │   ├── page.tsx   # Homepage với navigation menu
+│   │   │   ├── products/  # Product pages
+│   │   │   ├── auth/      # Login/Register
+│   │   │   ├── admin/     # Admin dashboard
+│   │   │   └── my-products/ # Seller products
 │   │   ├── contexts/      # Auth Context
+│   │   ├── components/    # Reusable components
 │   │   └── lib/           # Axios client
 │   └── package.json
 │
-├── database/              # SQL legacy (đã migrate)
+├── database/              # Database config & queries
 ├── docker-compose.yml
 └── README.md
 ```
@@ -100,6 +111,7 @@ my_web/
 * Node.js v18+
 * npm
 * Docker & Docker Compose
+* PostgreSQL (hoặc dùng Docker)
 
 Kiểm tra nhanh:
 
@@ -119,31 +131,47 @@ Tại thư mục gốc project:
 docker-compose up -d postgres
 ```
 
-* Port: `5440`
-* Database: `camera_web`
+Hoặc sử dụng PostgreSQL đã cài đặt sẵn.
+
+**Cấu hình database:**
+* Port: `5432` (hoặc `5440` nếu dùng Docker)
+* Database: `c2c_platform` (hoặc `camera_web`)
 * Tables được tạo tự động bằng TypeORM
+
+**Setup database:**
+```bash
+cd backend
+node setup-database.js
+node check-categories.js
+node update-condition-enum.js
+```
 
 ---
 
-### 3. Cài đặt & Chạy Backend (Port 3000)
+### 3. Cài đặt & Chạy Backend (Port 3002)
 
 Mở terminal mới:
 
 ```bash
 cd backend
 npm install
+
+# Tạo file .env từ env.example
+cp env.example .env
+# Chỉnh sửa .env với thông tin database của bạn
+
 npm run start:dev
 ```
 
 Sau khi chạy thành công:
 
-* API: `http://localhost:3000/api`
-* Swagger UI (nếu bật): `http://localhost:3000/api/docs`
+* API: `http://localhost:3002/api`
+* Swagger UI (nếu bật): `http://localhost:3002/api/docs`
 * Swagger file: `backend/swagger.yaml`
 
 ---
 
-### 4. Cài đặt & Chạy Frontend (Port 3001)
+### 4. Cài đặt & Chạy Frontend (Port 3000)
 
 Mở terminal khác:
 
@@ -153,25 +181,57 @@ npm install
 npm run dev
 ```
 
-* Web: `http://localhost:3001`
+* Web: `http://localhost:3000`
 
 ---
 
 ## 🔑 Tài Khoản Demo
 
 * Không có tài khoản mặc định
-* Người dùng tự đăng ký tại:
+* Người dùng tự đăng ký tại: `/auth/register`
+* Hoặc đăng nhập bằng Google OAuth
 
-```
-/auth/register
-```
+**Gợi ý Role khi đăng ký:**
+* **Buyer**: Chỉ mua hàng
+* **Seller**: Chỉ bán hàng
+* **Both**: Vừa mua vừa bán
+* **Admin**: Quản trị hệ thống (cần set trong database)
 
-Gợi ý Role:
+---
 
-* Sell products
-* Buy and Sell
+## 📋 Tính Năng Chi Tiết
 
-Admin có thể set trực tiếp trong database.
+### Đăng Sản Phẩm
+
+1. **Loại sản phẩm** (bắt buộc):
+   - Máy ảnh
+   - Ống kính
+   - Khác (đèn, trigger, ...)
+
+2. **Thông tin sản phẩm**:
+   - Tên sản phẩm
+   - Mô tả
+   - Giá
+   - Số lượng
+
+3. **Độ mới** (bắt buộc):
+   - Đã qua sử dụng
+   - Mới
+   - Như mới
+   - Cũ
+   - Nát
+
+4. **Địa điểm** (bắt buộc)
+
+5. **Hình ảnh**: Upload nhiều hình ảnh (tự động nén)
+
+### Navigation Menu
+
+Trang chủ có menu navigation với các danh mục:
+- **Tất cả**: Hiển thị tất cả sản phẩm
+- **Máy ảnh**: Lọc sản phẩm máy ảnh
+- **Ống kính**: Lọc sản phẩm ống kính
+- **Phụ kiện**: Lọc sản phẩm phụ kiện (bao gồm "Khác")
 
 ---
 
@@ -182,7 +242,7 @@ Admin có thể set trực tiếp trong database.
 **Register:**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:3002/api/auth/register \
 -H "Content-Type: application/json" \
 -d '{
   "email": "test@example.com",
@@ -195,7 +255,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 **Login:**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:3002/api/auth/login \
 -H "Content-Type: application/json" \
 -d '{
   "email": "test@example.com",
@@ -203,40 +263,164 @@ curl -X POST http://localhost:3000/api/auth/login \
 }'
 ```
 
+**Create Product (cần token):**
+
+```bash
+curl -X POST http://localhost:3002/api/products \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+-d '{
+  "name": "Canon EOS R5",
+  "description": "Full-frame mirrorless camera",
+  "price": 4599,
+  "condition": "new",
+  "stock": 1,
+  "location": "Hà Nội, Việt Nam",
+  "categoryId": 1,
+  "images": ["data:image/jpeg;base64,..."]
+}'
+```
+
 ---
 
 ## 📊 Database Schema
 
-* TypeORM synchronize: true (dev only)
-* Quan hệ chính:
+### Categories
 
-  * User → Product
-  * User → Order
-  * Order → OrderItem
-  * Order → Transaction
-  * ChatRoom → ChatMessage
+* ID: 1 - Máy ảnh (camera)
+* ID: 2 - Ống kính (lens)
+* ID: 3 - Phụ kiện (accessory)
+
+### Product Condition Enum
+
+* `used` - Đã qua sử dụng
+* `new` - Mới
+* `like_new` - Như mới
+* `old` - Cũ
+* `damaged` - Nát
+
+### Quan hệ chính:
+
+* User → Product (One-to-Many)
+* User → Order (One-to-Many)
+* Product → Category (Many-to-One)
+* Order → OrderItem (One-to-Many)
+* Order → Transaction (One-to-One)
+* ChatRoom → ChatMessage (One-to-Many)
+
+---
+
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+Tạo file `backend/.env` (hoặc copy từ `backend/env.example`):
+
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=your_password
+DATABASE_NAME=c2c_platform
+
+PORT=3002
+JWT_SECRET=your-secret-key-change-in-production
+JWT_REFRESH_SECRET=your-refresh-secret-change-in-production
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+FRONTEND_URL=http://localhost:3000
+```
+
+### Frontend Environment Variables
+
+Tạo file `frontend/.env.local` (optional):
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3002/api
+```
 
 ---
 
 ## ⚠️ Notes
 
-* Chỉ dùng synchronize trong môi trường dev
+* Chỉ dùng `synchronize: true` trong môi trường dev
 * Production cần:
-
   * TypeORM migrations
   * Đổi JWT secrets
   * Logging & monitoring
+  * Rate limiting
+  * HTTPS
 
 ---
 
 ## 📌 Project Status
 
-* Backend: Hoàn thành Auth + Products
-* Frontend: Auth + Product listing
-* Chat, Orders, Admin: đang phát triển
+### ✅ Hoàn thành
+
+* Backend: Auth + Products CRUD
+* Frontend: Auth + Product listing + Create product
+* Hỗ trợ hình ảnh sản phẩm (base64, jsonb)
+* Giao diện tiếng Việt
+* Navigation menu với categories
+* Form đăng sản phẩm đầy đủ
+
+### 🚧 Đang phát triển
+
+* Chat real-time (WebSocket)
+* Order management
+* Payment integration
+* Admin dashboard đầy đủ
+* Review & Rating system
+
+---
+
+## 🛠️ Troubleshooting
+
+### Database Issues
+
+**Kiểm tra categories:**
+```bash
+cd backend
+node check-categories.js
+```
+
+**Cập nhật enum condition:**
+```bash
+cd backend
+node update-condition-enum.js
+```
+
+**Reset database:**
+```bash
+cd backend
+node reset-database.js
+```
+
+### Port Conflicts
+
+Backend mặc định chạy trên port 3002. Nếu bị conflict:
+- Thay đổi `PORT` trong `backend/.env`
+- Hoặc kill process: `taskkill /F /IM node.exe` (Windows)
 
 ---
 
 ## 📄 License
 
 This project is for educational purposes only.
+
+---
+
+## 👥 Contributors
+
+* HoangLong1502
+
+---
+
+## 📞 Support
+
+Nếu gặp vấn đề, vui lòng tạo issue trên GitHub repository.

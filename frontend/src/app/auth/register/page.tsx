@@ -141,11 +141,11 @@ export default function RegisterPage() {
                             <div className="w-full border-t border-gray-300"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                            <span className="px-2 bg-white text-gray-500">Hoặc đăng ký bằng</span>
                         </div>
                     </div>
-                    <div className="mt-4 flex justify-center">
-                        <GoogleSignIn text="signup_with" />
+                    <div className="mt-4 w-full">
+                        <GoogleSignIn text="signup_with" width={undefined} />
                     </div>
                 </div>
 

@@ -13,6 +13,7 @@ interface Product {
   description: string;
   price: number | string; // Can be string from database decimal
   images: string[] | null;
+  location: string | null;
   seller: {
     id: number;
     fullName: string;
@@ -30,17 +31,25 @@ export default function Home() {
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchProducts(search, selectedCategory);
-    // Refresh products every 5 seconds to show new products
-    const interval = setInterval(() => {
-      fetchProducts(search, selectedCategory);
-    }, 5000);
-    return () => clearInterval(interval);
+    fetchProducts(search, selectedCategory, true); // Initial load with loading
   }, [selectedCategory]);
 
-  const fetchProducts = async (searchTerm?: string, categoryId?: string) => {
+  // Auto refresh in background (silent, no loading state)
+  useEffect(() => {
+    // Only auto-refresh if user is not actively searching
+    if (!search) {
+      const interval = setInterval(() => {
+        fetchProducts(search, selectedCategory, false); // Silent refresh
+      }, 30000); // Refresh every 30 seconds instead of 5
+      return () => clearInterval(interval);
+    }
+  }, [selectedCategory, search]);
+
+  const fetchProducts = async (searchTerm?: string, categoryId?: string, showLoading: boolean = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setError(null);
       const params: any = {};
       if (searchTerm) {
@@ -52,35 +61,48 @@ export default function Home() {
       const response = await apiClient.get<Product[]>('/products', { params });
       const productsData = Array.isArray(response.data) ? response.data : [];
       
-      // Debug: Log first product's images to see what we're getting
-      if (productsData.length > 0) {
-        console.log('Sample product images:', {
-          productId: productsData[0].id,
-          images: productsData[0].images,
-          imagesType: typeof productsData[0].images,
-          isArray: Array.isArray(productsData[0].images),
-          firstImagePreview: productsData[0].images 
-            ? (Array.isArray(productsData[0].images) 
-                ? productsData[0].images[0]?.substring(0, 100) 
-                : typeof productsData[0].images === 'string' 
-                  ? productsData[0].images.substring(0, 100)
-                  : 'unknown')
-            : 'null'
-        });
-      }
-      
-      setProducts(productsData);
+      // Only update if data actually changed to prevent unnecessary re-renders and flickering
+      setProducts(prevProducts => {
+        // If no previous data, always update
+        if (prevProducts.length === 0) {
+          return productsData;
+        }
+        
+        // Simple comparison: check if IDs changed
+        const prevIds = new Set(prevProducts.map(p => p.id));
+        const newIds = new Set(productsData.map(p => p.id));
+        
+        // If different number of products, update
+        if (prevIds.size !== newIds.size) {
+          return productsData;
+        }
+        
+        // Check if any IDs are different
+        for (const id of newIds) {
+          if (!prevIds.has(id)) {
+            return productsData; // New product found
+          }
+        }
+        
+        // Products are the same, keep previous to avoid re-render
+        return prevProducts;
+      });
     } catch (error: any) {
       console.error('Failed to fetch products', error);
-      setError(error.response?.data?.message || 'Không thể tải sản phẩm. Vui lòng thử lại.');
-      setProducts([]);
+      // Only show error on user-initiated actions, not silent refreshes
+      if (showLoading) {
+        setError(error.response?.data?.message || 'Không thể tải sản phẩm. Vui lòng thử lại.');
+        setProducts([]);
+      }
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
   const handleSearch = () => {
-    fetchProducts(search, selectedCategory);
+    fetchProducts(search, selectedCategory, true); // User action, show loading
   };
 
   const handleCategoryClick = async (categorySlug: string) => {
@@ -332,12 +354,28 @@ export default function Home() {
                       )}
                     </div>
                     <div className="p-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-2xl font-bold text-blue-600">
-                          ${typeof product.price === 'string' 
-                            ? parseFloat(product.price).toLocaleString() 
-                            : product.price.toLocaleString()}
-                        </span>
+                      <div className="mb-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-2xl font-bold text-blue-600">
+                            ${typeof product.price === 'string' 
+                              ? parseFloat(product.price).toLocaleString() 
+                              : product.price.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1.5 text-sm">
+                          {product.location && (
+                            <div className="flex items-center gap-1.5 text-gray-600">
+                              <span className="text-gray-400">📍</span>
+                              <span className="truncate font-medium">{product.location}</span>
+                            </div>
+                          )}
+                          {product.seller && (
+                            <div className="flex items-center gap-1.5 text-gray-600">
+                              <span className="text-gray-400">👤</span>
+                              <span className="truncate font-medium">{product.seller.fullName || 'Người bán'}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <button
                         onClick={() => router.push(`/products/${product.id}`)}
