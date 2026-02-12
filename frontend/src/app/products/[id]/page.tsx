@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, ShoppingCart, User, MapPin, Package } from 'lucide-react';
+import { formatPrice } from '@/lib/formatPrice';
 
 interface Product {
   id: number;
@@ -250,9 +251,7 @@ export default function ProductDetailPage() {
               
               <div className="mb-6">
                 <span className="text-4xl font-bold text-blue-600">
-                  ${typeof product.price === 'string' 
-                    ? parseFloat(product.price).toLocaleString() 
-                    : product.price.toLocaleString()}
+                  {formatPrice(product.price)} đ
                 </span>
               </div>
 

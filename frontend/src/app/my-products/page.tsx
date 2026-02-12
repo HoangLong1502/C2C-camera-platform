@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/api';
 import { Plus, Edit, Trash2, Package } from 'lucide-react';
+import { formatPrice } from '@/lib/formatPrice';
 
 interface Product {
   id: number;
@@ -206,9 +207,7 @@ export default function MyProductsPage() {
                   </p>
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-xl font-bold text-blue-600">
-                      ${typeof product.price === 'string'
-                        ? parseFloat(product.price).toLocaleString()
-                        : product.price.toLocaleString()}
+                      {formatPrice(product.price)} đ
                     </span>
                     <span className="text-sm text-gray-500">
                       Số lượng: {product.stock}
