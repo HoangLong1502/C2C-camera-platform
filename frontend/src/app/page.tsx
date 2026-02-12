@@ -6,6 +6,7 @@ import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import UserDropdown from '@/components/UserDropdown';
 import { Camera, Search, Plus, ShoppingCart } from 'lucide-react';
+import { formatPrice } from '@/lib/formatPrice';
 
 interface Product {
   id: number;
@@ -58,40 +59,41 @@ export default function Home() {
       if (categoryId) {
         params.category = categoryId;
       }
+      
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Fetching products with params:', params);
+      }
+      
       const response = await apiClient.get<Product[]>('/products', { params });
+      
       const productsData = Array.isArray(response.data) ? response.data : [];
       
-      // Only update if data actually changed to prevent unnecessary re-renders and flickering
-      setProducts(prevProducts => {
-        // If no previous data, always update
-        if (prevProducts.length === 0) {
-          return productsData;
-        }
-        
-        // Simple comparison: check if IDs changed
-        const prevIds = new Set(prevProducts.map(p => p.id));
-        const newIds = new Set(productsData.map(p => p.id));
-        
-        // If different number of products, update
-        if (prevIds.size !== newIds.size) {
-          return productsData;
-        }
-        
-        // Check if any IDs are different
-        for (const id of newIds) {
-          if (!prevIds.has(id)) {
-            return productsData; // New product found
-          }
-        }
-        
-        // Products are the same, keep previous to avoid re-render
-        return prevProducts;
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Products response:', response.data);
+        console.log('Processed products data:', productsData.length, 'products');
+      }
+      
+      // Always update products (removed comparison to fix display issue)
+      setProducts(productsData);
     } catch (error: any) {
-      console.error('Failed to fetch products', error);
-      // Only show error on user-initiated actions, not silent refreshes
+      // Only log detailed errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to fetch products', error);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          url: error.config?.url,
+        });
+      }
+      
+      // Show error on user-initiated actions, not silent refreshes
       if (showLoading) {
-        setError(error.response?.data?.message || 'Không thể tải sản phẩm. Vui lòng thử lại.');
+        const errorMessage = error.response?.data?.message 
+          || error.message 
+          || 'Không thể tải sản phẩm. Vui lòng kiểm tra kết nối và thử lại.';
+        setError(errorMessage);
         setProducts([]);
       }
     } finally {
@@ -251,8 +253,18 @@ export default function Home() {
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && products.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">Không có sản phẩm nào</p>
+            <p className="text-gray-400 text-sm mt-2">Hãy thử đăng sản phẩm đầu tiên!</p>
+          </div>
+        )}
+
+        {!loading && !error && products.length > 0 && (
           <>
+            <div className="mb-4 text-sm text-gray-600">
+              Tìm thấy {products.length} sản phẩm
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {products.map((product) => {
                 // Handle images - could be array or string (simple-array format)
@@ -357,9 +369,7 @@ export default function Home() {
                       <div className="mb-3">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-2xl font-bold text-blue-600">
-                            ${typeof product.price === 'string' 
-                              ? parseFloat(product.price).toLocaleString() 
-                              : product.price.toLocaleString()}
+                            {formatPrice(product.price)} đ
                           </span>
                         </div>
                         <div className="flex flex-col gap-1.5 text-sm">

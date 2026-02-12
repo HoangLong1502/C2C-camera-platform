@@ -20,8 +20,33 @@ apiClient.interceptors.request.use((config) => {
 
 // Handle token refresh
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Log successful responses for debugging
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ API ${response.config.method?.toUpperCase()} ${response.config.url}`, response.status);
+        }
+        return response;
+    },
     async (error) => {
+        // Log errors for debugging (only in development)
+        if (process.env.NODE_ENV === 'development') {
+            if (error.response) {
+                console.error(`❌ API Error ${error.response.status}:`, {
+                    url: error.config?.url,
+                    method: error.config?.method,
+                    message: error.response.data?.message || error.message,
+                    data: error.response.data,
+                });
+            } else if (error.request) {
+                console.error('❌ Network Error:', {
+                    url: error.config?.url,
+                    message: 'Không thể kết nối đến server. Kiểm tra xem backend có đang chạy không.',
+                });
+            } else {
+                console.error('❌ Request Error:', error.message);
+            }
+        }
+
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
