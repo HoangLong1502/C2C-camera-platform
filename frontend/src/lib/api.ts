@@ -31,17 +31,18 @@ apiClient.interceptors.response.use(
         // Log errors for debugging (only in development)
         if (process.env.NODE_ENV === 'development') {
             if (error.response) {
-                console.error(`❌ API Error ${error.response.status}:`, {
-                    url: error.config?.url,
-                    method: error.config?.method,
+                const fullUrl = error.config?.baseURL && error.config?.url
+                    ? `${error.config.baseURL.replace(/\/$/, '')}${error.config.url?.startsWith('/') ? '' : '/'}${error.config.url}`
+                    : error.config?.url;
+                console.error(`❌ API Error ${error.response.status}: ${error.config?.method?.toUpperCase()} ${fullUrl}`, {
                     message: error.response.data?.message || error.message,
                     data: error.response.data,
                 });
             } else if (error.request) {
-                console.error('❌ Network Error:', {
-                    url: error.config?.url,
-                    message: 'Không thể kết nối đến server. Kiểm tra xem backend có đang chạy không.',
-                });
+                const fullUrl = error.config?.baseURL && error.config?.url
+                    ? `${error.config.baseURL.replace(/\/$/, '')}${error.config.url?.startsWith('/') ? '' : '/'}${error.config.url}`
+                    : error.config?.url;
+                console.error('❌ Network Error:', fullUrl, 'Không thể kết nối đến server. Kiểm tra xem backend có đang chạy không.');
             } else {
                 console.error('❌ Request Error:', error.message);
             }

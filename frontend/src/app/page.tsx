@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import UserDropdown from '@/components/UserDropdown';
-import { Camera, Search, Plus, ShoppingCart } from 'lucide-react';
+import { Search, ShoppingCart } from 'lucide-react';
 import { formatPrice } from '@/lib/formatPrice';
 
 interface Product {
@@ -134,90 +133,50 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Camera className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">C2C Camera Platform</h1>
-            </div>
-            <div className="flex gap-4 items-center">
-            {user ? (
-              <>
-                <button
-                  onClick={() => router.push('/products/create')}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>Đăng</span>
-                </button>
-                <UserDropdown />
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => router.push('/auth/login')}
-                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                >
-                  Đăng nhập
-                </button>
-                <button
-                  onClick={() => router.push('/auth/register')}
-                  className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
-                >
-                  Đăng ký
-                </button>
-              </>
-            )}
-            </div>
-          </div>
-          {/* Navigation Menu */}
-          <nav className="flex justify-center gap-6 mt-4 border-t pt-4">
-            <button
-              onClick={() => handleCategoryClick('all')}
-              className={`font-medium transition-colors ${
-                !selectedCategory 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700 hover:text-blue-600'
-              }`}
-            >
-              Tất cả
-            </button>
-            <button
-              onClick={() => handleCategoryClick('camera')}
-              className={`font-medium transition-colors ${
-                selectedCategory === '1' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700 hover:text-blue-600'
-              }`}
-            >
-              Máy ảnh
-            </button>
-            <button
-              onClick={() => handleCategoryClick('lens')}
-              className={`font-medium transition-colors ${
-                selectedCategory === '2' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700 hover:text-blue-600'
-              }`}
-            >
-              Ống kính
-            </button>
-            <button
-              onClick={() => handleCategoryClick('accessory')}
-              className={`font-medium transition-colors ${
-                selectedCategory === '3' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700 hover:text-blue-600'
-              }`}
-            >
-              Phụ kiện
-            </button>
-          </nav>
-        </div>
-      </header>
+      <nav className="bg-white border-b flex justify-center gap-6 py-3">
+        <button
+          onClick={() => handleCategoryClick('all')}
+          className={`font-medium transition-colors ${
+            !selectedCategory 
+              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+              : 'text-gray-700 hover:text-blue-600'
+          }`}
+        >
+          Tất cả
+        </button>
+        <button
+          onClick={() => handleCategoryClick('camera')}
+          className={`font-medium transition-colors ${
+            selectedCategory === '1' 
+              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+              : 'text-gray-700 hover:text-blue-600'
+          }`}
+        >
+          Máy ảnh
+        </button>
+        <button
+          onClick={() => handleCategoryClick('lens')}
+          className={`font-medium transition-colors ${
+            selectedCategory === '2' 
+              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+              : 'text-gray-700 hover:text-blue-600'
+          }`}
+        >
+          Ống kính
+        </button>
+        <button
+          onClick={() => handleCategoryClick('accessory')}
+          className={`font-medium transition-colors ${
+            selectedCategory === '3' 
+              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+              : 'text-gray-700 hover:text-blue-600'
+          }`}
+        >
+          Phụ kiện
+        </button>
+      </nav>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="relative flex gap-2">
             <div className="relative flex-1">
@@ -407,7 +366,7 @@ export default function Home() {
             )}
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

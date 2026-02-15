@@ -18,8 +18,10 @@ import { Notification } from './entities/notification.entity';
 import { Promotion } from './entities/promotion.entity';
 import { Dispute } from './entities/dispute.entity';
 import { Subscription } from './entities/subscription.entity';
+import { ProductView } from './entities/product-view.entity';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { ProductsModule } from './products/products.module';
           Transaction,
           ChatRoom,
           ChatMessage,
+          ProductView,
           Review,
           Payment,
           Notification,
@@ -64,6 +67,7 @@ import { ProductsModule } from './products/products.module';
     ]),
     AuthModule,
     ProductsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

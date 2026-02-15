@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, ShoppingCart, User, MapPin, Package } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, User, MapPin, Package, MessageCircle, Eye, X } from 'lucide-react';
 import { formatPrice } from '@/lib/formatPrice';
+import { ChatBox } from '@/components/ChatBox';
 
 interface Product {
   id: number;
@@ -32,12 +33,24 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [chatRoomId, setChatRoomId] = useState<number | null>(null);
+  const [chatOtherUserName, setChatOtherUserName] = useState<string | null>(null);
+  const [chatProductName, setChatProductName] = useState<string | null>(null);
+  const [chatOpening, setChatOpening] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [stats, setStats] = useState<{ viewCount: number; chattedUsers: { id: number; otherUser: { id: number; fullName: string } }[] } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
     if (params.id) {
       fetchProduct();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    if (!product?.id || (user && product.seller && user.id === product.seller.id)) return;
+    apiClient.post(`/products/${product.id}/view`).catch(() => {});
+  }, [product?.id, user?.id, product?.seller?.id]);
 
   const fetchProduct = async () => {
     try {
@@ -60,6 +73,62 @@ export default function ProductDetailPage() {
     }
     // TODO: Implement buy functionality
     alert('Chức năng mua hàng sẽ được thêm sau!');
+  };
+
+  const handleChat = async () => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+    if (!product?.seller?.id || !product?.id) return;
+    if (user.id === product.seller.id) return;
+    setChatOpening(true);
+    try {
+      const { data } = await apiClient.post('/chat/room', {
+        sellerId: product.seller.id,
+        productId: product.id,
+      });
+      setChatRoomId(data.id);
+      setChatOtherUserName(null);
+      setChatProductName(product?.name ?? null);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Không mở được chat';
+      alert(msg);
+    } finally {
+      setChatOpening(false);
+    }
+  };
+
+  const openStatsModal = async () => {
+    if (!user || !product?.id) return;
+    setStatsLoading(true);
+    setStatsOpen(true);
+    setStats(null);
+    try {
+      const { data } = await apiClient.get<{ viewCount: number; chattedUsers: { id: number; otherUser: { id: number; fullName: string } }[] }>(
+        `/products/${product.id}/stats`,
+      );
+      setStats(data);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Không tải được thống kê';
+      alert(msg);
+      setStatsOpen(false);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const openChatFromStats = (roomId: number, otherUserName: string) => {
+    setChatRoomId(roomId);
+    setChatOtherUserName(otherUserName);
+    setChatProductName(product?.name ?? null);
+    setStatsOpen(false);
+  };
+
+  const closeChat = () => {
+    setChatRoomId(null);
+    setChatOtherUserName(null);
+    setChatProductName(null);
   };
 
   // Process images
@@ -295,13 +364,92 @@ export default function ProductDetailPage() {
                 <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
               </div>
 
-              <button
-                onClick={handleBuy}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
-              >
-                <ShoppingCart className="w-6 h-6" />
-                Mua ngay
-              </button>
+              <div className="flex gap-3">
+                {product.seller && user?.id === product.seller.id ? (
+                  <button
+                    onClick={openStatsModal}
+                    disabled={statsLoading}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    title="Số người đã xem và đã nhắn tin"
+                  >
+                    <Eye className="w-5 h-5" />
+                    Số người đã xem
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleBuy}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+                    >
+                      <ShoppingCart className="w-6 h-6" />
+                      Mua ngay
+                    </button>
+                    {product.seller && user && user.id !== product.seller.id && (
+                      <button
+                        onClick={handleChat}
+                        disabled={chatOpening}
+                        className="flex items-center justify-center gap-1.5 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium shrink-0"
+                        title="Chat với người bán"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Chat
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              {statsOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setStatsOpen(false)}>
+                  <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Thống kê sản phẩm</h3>
+                      <button type="button" onClick={() => setStatsOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    {statsLoading ? (
+                      <p className="text-gray-500">Đang tải...</p>
+                    ) : stats ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Eye className="w-5 h-5" />
+                          <span>Số user đã xem: <strong>{stats.viewCount}</strong></span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-2">Đã nhắn tin với bạn:</p>
+                          {stats.chattedUsers.length === 0 ? (
+                            <p className="text-gray-500 text-sm">Chưa có ai nhắn tin.</p>
+                          ) : (
+                            <ul className="space-y-2">
+                              {stats.chattedUsers.map((r) => (
+                                <li key={r.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                  <span className="text-gray-900">{r.otherUser?.fullName ?? 'Người dùng'}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => openChatFromStats(r.id, r.otherUser?.fullName ?? 'Người dùng')}
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Nhắn tin
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+              {chatRoomId !== null && user && (
+                <ChatBox
+                  roomId={chatRoomId}
+                  productName={chatProductName ?? product?.name ?? 'Tin nhắn'}
+                  otherUserName={chatOtherUserName ?? product?.seller?.fullName ?? 'Người dùng'}
+                  currentUserId={user.id}
+                  onClose={closeChat}
+                />
+              )}
             </div>
           </div>
         </div>
