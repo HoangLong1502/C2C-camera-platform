@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import AppHeader from "@/components/AppHeader";
 
 export const metadata: Metadata = {
   title: "C2C Camera Platform",
@@ -16,7 +17,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
+          <AppHeader />
+          <main>{children}</main>
         </AuthProvider>
       </body>
     </html>

@@ -16,14 +16,19 @@ import {
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../entities/user.entity';
 import { ProductStatus } from '../entities/product.entity';
+import { ChatService } from '../chat/chat.service';
 
 @Controller('products')
 export class ProductsController {
-    constructor(private productsService: ProductsService) { }
+    constructor(
+        private productsService: ProductsService,
+        private chatService: ChatService,
+    ) { }
 
     @Get()
     findAll(
@@ -32,6 +37,36 @@ export class ProductsController {
         @Query('status') status?: ProductStatus,
     ) {
         return this.productsService.findAll(category, search, status);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('seller/my-products')
+    myProducts(@Req() req: Request & { user: any }) {
+        const userId = req.user.userId || req.user.sub;
+        return this.productsService.findByUser(userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get(':id/stats')
+    async getProductStats(@Param('id') id: string, @Req() req: Request & { user: any }) {
+        const userId = req.user.userId ?? req.user.sub;
+        const productId = +id;
+        const product = await this.productsService.findOne(productId);
+        if (!product || (product as any).sellerId !== userId) {
+            throw new HttpException('Chỉ chủ sản phẩm mới xem được thống kê', HttpStatus.FORBIDDEN);
+        }
+        const viewCount = await this.productsService.getViewCount(productId);
+        const chattedUsers = await this.chatService.getRoomsByProduct(productId, userId);
+        return { viewCount, chattedUsers };
+    }
+
+    @UseGuards(OptionalJwtAuthGuard)
+    @Post(':id/view')
+    async recordView(@Param('id') id: string, @Req() req: Request & { user?: any }) {
+        const productId = +id;
+        const userId = req.user?.userId ?? req.user?.sub ?? null;
+        await this.productsService.recordView(productId, userId);
+        return { ok: true };
     }
 
     @Get(':id')
@@ -79,13 +114,6 @@ export class ProductsController {
     remove(@Param('id') id: string, @Req() req: Request & { user: any }) {
         const userId = req.user.userId || req.user.sub;
         return this.productsService.remove(+id, userId);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Get('seller/my-products')
-    myProducts(@Req() req: Request & { user: any }) {
-        const userId = req.user.userId || req.user.sub;
-        return this.productsService.findByUser(userId);
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

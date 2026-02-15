@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Product, ProductStatus, ProductCondition } from '../entities/product.entity';
+import { ProductView } from '../entities/product-view.entity';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { User } from '../entities/user.entity';
 
@@ -13,6 +14,8 @@ export class ProductsService {
         private productRepository: Repository<Product>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @InjectRepository(ProductView)
+        private productViewRepository: Repository<ProductView>,
         @InjectDataSource()
         private dataSource: DataSource,
     ) { }
@@ -381,6 +384,26 @@ export class ProductsService {
 
         await this.productRepository.remove(product);
         return { message: 'Product deleted successfully' };
+    }
+
+    async recordView(productId: number, userId: number | null) {
+        const product = await this.productRepository.findOne({ where: { id: productId } });
+        if (!product) return;
+        if (userId !== null) {
+            await this.productViewRepository.upsert(
+                { productId, userId, viewedAt: new Date() },
+                { conflictPaths: ['productId', 'userId'] },
+            );
+        }
+    }
+
+    async getViewCount(productId: number): Promise<number> {
+        const result = await this.productViewRepository
+            .createQueryBuilder('v')
+            .where('v.product_id = :productId', { productId })
+            .select('COUNT(DISTINCT v.user_id)', 'count')
+            .getRawOne<{ count: string }>();
+        return parseInt(result?.count || '0', 10);
     }
 
     // Admin methods
