@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { User, UserRole } from '../entities/user.entity';
-import { RegisterDto, LoginDto, GoogleAuthDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, GoogleAuthDto, UpdateProfileDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -163,6 +163,30 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
+        const { password, refreshToken, ...result } = user;
+        return result;
+    }
+
+    async updateProfile(userId: number, dto: UpdateProfileDto) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+        if (dto.email != null && dto.email.trim() !== '') {
+            const normalizedEmail = dto.email.toLowerCase().trim();
+            const existing = await this.userRepository.findOne({ where: { email: normalizedEmail } });
+            if (existing && existing.id !== userId) {
+                throw new ConflictException('Email đã được sử dụng');
+            }
+            user.email = normalizedEmail;
+        }
+        if (dto.fullName !== undefined) {
+            user.fullName = dto.fullName?.trim() ?? user.fullName;
+        }
+        if (dto.phone !== undefined) {
+            user.phone = dto.phone?.trim() || '';
+        }
+        await this.userRepository.save(user);
         const { password, refreshToken, ...result } = user;
         return result;
     }
