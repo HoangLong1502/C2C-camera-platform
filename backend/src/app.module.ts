@@ -22,6 +22,7 @@ import { ProductView } from './entities/product-view.entity';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { ChatModule } from './chat/chat.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     ProductsModule,
     ChatModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
