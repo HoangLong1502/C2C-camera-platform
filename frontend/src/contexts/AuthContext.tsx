@@ -8,6 +8,7 @@ interface User {
     email: string;
     fullName: string;
     role: string;
+    phone?: string | null;
 }
 
 interface AuthContextType {
@@ -17,6 +18,7 @@ interface AuthContextType {
     register: (data: any) => Promise<void>;
     loginWithGoogle: (token: string) => Promise<void>;
     logout: () => void;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -96,8 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = '/auth/login';
     };
 
+    const refreshUser = async () => {
+        await fetchUserData();
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
