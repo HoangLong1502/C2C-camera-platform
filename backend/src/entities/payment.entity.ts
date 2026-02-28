@@ -12,28 +12,28 @@ export enum PaymentStatus {
 @Entity('payments')
 export class Payment {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column({ name: 'order_id' })
-    orderId: number;
+    orderId!: number;
 
     @Column({ name: 'user_id' })
-    userId: number;
+    userId!: number;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
-    amount: number;
+    amount!: number;
 
     @Column({ default: 'VND', length: 3 })
-    currency: string;
+    currency!: string;
 
     @Column({ name: 'payment_method', type: 'varchar', length: 50, nullable: true })
-    paymentMethod: string;
+    paymentMethod!: string | null;
 
     @Column({ type: 'varchar', length: 50, nullable: true })
-    provider: string; // vnpay, momo, stripe
+    provider!: string | null; // vnpay, momo, stripe
 
     @Column({ name: 'transaction_id', type: 'varchar', nullable: true })
-    transactionId: string;
+    transactionId!: string | null;
 
     @Column({
         name: 'payment_status',
@@ -41,10 +41,10 @@ export class Payment {
         enum: PaymentStatus,
         default: PaymentStatus.PENDING,
     })
-    paymentStatus: PaymentStatus;
+    paymentStatus!: PaymentStatus;
 
     @Column({ type: 'jsonb', nullable: true })
-    metadata: Record<string, any>;
+    metadata!: Record<string, any> | null;
 
     @ManyToOne(() => Order, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'order_id' })

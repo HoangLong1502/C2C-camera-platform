@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, ChevronDown, LogOut, Package, Plus, Settings } from 'lucide-react';
+import { formatPrice } from '@/lib/formatPrice';
+import { User, ChevronDown, LogOut, Package, Wallet, Settings, ShoppingBag } from 'lucide-react';
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +31,22 @@ export default function UserDropdown() {
       icon: Package,
       onClick: () => {
         router.push('/my-products');
+        setIsOpen(false);
+      },
+    },
+    {
+      label: 'Đơn hàng của tôi',
+      icon: ShoppingBag,
+      onClick: () => {
+        router.push('/orders');
+        setIsOpen(false);
+      },
+    },
+    {
+      label: 'Nạp ví (VNPay)',
+      icon: Wallet,
+      onClick: () => {
+        router.push('/wallet/topup');
         setIsOpen(false);
       },
     },
@@ -78,6 +95,9 @@ export default function UserDropdown() {
             <div className="text-sm font-medium text-gray-900">
               {user.fullName || user.email}
             </div>
+            <div className="text-xs text-neutral-600">
+              Số dư: <span className="font-semibold text-neutral-900">{formatPrice(Number(user.walletBalance ?? 0))}₫</span>
+            </div>
             {user.role === 'admin' && (
               <div className="text-xs text-[#5A2475]">Admin</div>
             )}
@@ -90,6 +110,12 @@ export default function UserDropdown() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-[#5A2475]/15 py-1 z-50">
+          <div className="px-4 py-3 border-b border-neutral-100">
+            <div className="text-sm font-semibold text-neutral-900 truncate">{user.fullName || user.email}</div>
+            <div className="text-xs text-neutral-600 mt-0.5">
+              Số dư: <span className="font-semibold text-neutral-900">{formatPrice(Number(user.walletBalance ?? 0))}₫</span>
+            </div>
+          </div>
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             return (

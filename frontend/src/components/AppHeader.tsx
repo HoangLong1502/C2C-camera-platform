@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/api';
 import UserDropdown from '@/components/UserDropdown';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 import { Camera, Plus, MessageCircle } from 'lucide-react';
 
 export default function AppHeader() {
@@ -44,6 +45,7 @@ export default function AppHeader() {
                   <Plus className="w-4 h-4" />
                   <span>Đăng</span>
                 </button>
+                <NotificationsDropdown />
                 <button
                   onClick={() => router.push('/messages')}
                   className="relative p-2 rounded-lg hover:bg-[#5A2475]/10 text-[#5A2475]"

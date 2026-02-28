@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/lib/formatPrice';
-import { ArrowLeft, CreditCard, Banknote, Loader2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Banknote, Loader2, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 interface Product {
@@ -27,7 +27,7 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<'bank' | 'cod'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'bank' | 'cod' | 'wallet'>('cod');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
@@ -70,6 +70,8 @@ function CheckoutContent() {
   const shippingFee = 0;
   const total = subtotal + shippingFee;
   const maxQty = Math.max(1, product?.stock ?? 1);
+  const walletBalance = Number(user?.walletBalance ?? 0);
+  const walletEnough = walletBalance >= total;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,10 +79,14 @@ function CheckoutContent() {
       setError('Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ giao hàng.');
       return;
     }
+    if (paymentMethod === 'wallet' && !walletEnough) {
+      setError('Số dư ví không đủ để thanh toán. Vui lòng nạp thêm hoặc chọn phương thức khác.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
-      await apiClient.post('/orders', {
+      const { data } = await apiClient.post('/orders', {
         productId: Number(productId),
         quantity,
         paymentMethod,
@@ -89,7 +95,7 @@ function CheckoutContent() {
         customerAddress: customerAddress.trim(),
         notes: notes.trim() || undefined,
       });
-      router.push('/?ordered=1');
+      router.push(`/checkout/success?orderId=${data.id}`);
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Đặt hàng thất bại');
     } finally {
@@ -211,6 +217,28 @@ function CheckoutContent() {
             <span className="w-1 h-4 bg-[#5A2475] rounded" /> Phương thức thanh toán
           </h2>
           <div className="space-y-2">
+            <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-[#5A2475]/5 border-[#5A2475]/15 has-[:checked]:border-[#5A2475] has-[:checked]:bg-[#5A2475]/10 ${!walletEnough ? 'opacity-80' : ''}`}>
+              <input
+                type="radio"
+                name="payment"
+                value="wallet"
+                checked={paymentMethod === 'wallet'}
+                onChange={() => setPaymentMethod('wallet')}
+                className="text-[#5A2475] focus:ring-[#5A2475]"
+              />
+              <Wallet className="w-5 h-5 text-neutral-600" />
+              <div className="flex-1">
+                <div className="font-medium text-neutral-900">Ví (số dư: {formatPrice(walletBalance)}₫)</div>
+                {!walletEnough && (
+                  <div className="text-xs text-red-600 mt-0.5">Không đủ số dư để thanh toán {formatPrice(total)}₫</div>
+                )}
+              </div>
+              {!walletEnough ? (
+                <Link href="/wallet/topup" className="text-xs font-semibold text-[#5A2475] hover:underline" onClick={(e) => e.stopPropagation()}>
+                  Nạp ví
+                </Link>
+              ) : null}
+            </label>
             <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-[#5A2475]/5 border-[#5A2475]/15 has-[:checked]:border-[#5A2475] has-[:checked]:bg-[#5A2475]/10">
               <input
                 type="radio"
@@ -221,7 +249,7 @@ function CheckoutContent() {
                 className="text-[#5A2475] focus:ring-[#5A2475]"
               />
               <Banknote className="w-5 h-5 text-neutral-600" />
-              <span className="font-medium">Thanh toán khi nhận hàng (COD)</span>
+              <span className="font-medium text-neutral-900">Thanh toán khi nhận hàng (COD)</span>
             </label>
             <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-[#5A2475]/5 border-[#5A2475]/15 has-[:checked]:border-[#5A2475] has-[:checked]:bg-[#5A2475]/10">
               <input
@@ -233,7 +261,7 @@ function CheckoutContent() {
                 className="text-[#5A2475] focus:ring-[#5A2475]"
               />
               <CreditCard className="w-5 h-5 text-neutral-600" />
-              <span className="font-medium">Chuyển khoản ngân hàng</span>
+              <span className="font-medium text-neutral-900">Chuyển khoản ngân hàng</span>
             </label>
           </div>
         </div>
@@ -250,7 +278,7 @@ function CheckoutContent() {
               <span>{formatPrice(shippingFee)}₫</span>
             </div>
           )}
-          <div className="flex justify-between font-semibold text-lg mt-2 pt-2 border-t border-[#5A2475]/15">
+          <div className="flex justify-between font-semibold text-lg mt-2 pt-2 border-t border-[#5A2475]/15 text-neutral-900">
             <span>Tổng thanh toán</span>
             <span className="text-[#5A2475]">{formatPrice(total)}₫</span>
           </div>

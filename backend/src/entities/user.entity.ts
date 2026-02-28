@@ -50,6 +50,9 @@ export class User {
     @Column({ name: 'bank_name', type: 'varchar', nullable: true })
     bankName!: string;
 
+    @Column({ name: 'wallet_balance', type: 'decimal', precision: 12, scale: 2, default: 0 })
+    walletBalance!: number;
+
     @Column({ default: false })
     verified!: boolean;
 

@@ -8,8 +8,8 @@ export class CreateOrderDto {
   @Min(1)
   quantity: number;
 
-  @IsIn(['bank', 'cod'], { message: 'Phương thức thanh toán phải là bank hoặc cod' })
-  paymentMethod: 'bank' | 'cod';
+  @IsIn(['bank', 'cod', 'wallet'], { message: 'Phương thức thanh toán phải là bank, cod hoặc wallet' })
+  paymentMethod: 'bank' | 'cod' | 'wallet';
 
   @IsString()
   @MaxLength(100)
