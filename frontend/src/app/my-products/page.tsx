@@ -68,16 +68,16 @@ export default function MyProductsPage() {
       case 'rejected':
         return 'bg-red-100 text-red-700';
       case 'draft':
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-[#5A2475]/10 text-[#5A2475]';
       default:
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-[#5A2475]/10 text-[#5A2475]';
     }
   };
 
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">Loading...</p>
       </div>
     );
@@ -86,13 +86,13 @@ export default function MyProductsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Sản phẩm của tôi</h1>
           <button
             onClick={() => router.push('/products/create')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 transition-colors"
           >
             <Plus className="w-5 h-5" />
             Đăng
@@ -115,7 +115,7 @@ export default function MyProductsPage() {
             <p className="text-gray-500 text-lg mb-4">Chưa có sản phẩm nào</p>
             <button
               onClick={() => router.push('/products/create')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-[#963CC3] text-white rounded-xl hover:opacity-90 transition-colors"
             >
               Tạo sản phẩm đầu tiên
             </button>
@@ -127,7 +127,7 @@ export default function MyProductsPage() {
                 key={product.id}
                 className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
               >
-                <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-500 rounded-t-lg flex items-center justify-center overflow-hidden relative">
+                <div className="h-48 bg-gradient-to-br from-[#5A2475] to-[#963CC3] rounded-t-lg flex items-center justify-center overflow-hidden relative">
                   {(() => {
                     // Handle images - could be array or string (legacy format)
                     let imageUrl: string | null = null;
@@ -206,7 +206,7 @@ export default function MyProductsPage() {
                     {product.description}
                   </p>
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-xl font-bold text-blue-600">
+                    <span className="text-xl font-bold text-[#5A2475]">
                       {formatPrice(product.price)} đ
                     </span>
                     <span className="text-sm text-gray-500">
@@ -216,7 +216,7 @@ export default function MyProductsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => router.push(`/products/${product.id}/edit`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#5A2475]/10 text-[#5A2475] rounded-xl hover:bg-[#5A2475]/20 transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                       Sửa

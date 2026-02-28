@@ -42,11 +42,11 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center py-12 px-4">
-            <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+        <div className="min-h-screen bg-gradient-to-br from-[#5A2475] via-[#6B2D8A] to-[#963CC3] flex items-center justify-center py-12 px-4">
+            <div className="max-w-md w-full bg-white/95 backdrop-blur rounded-2xl shadow-2xl shadow-[#5A2475]/20 p-8 border border-[#5A2475]/10">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-                        <UserPlus className="w-8 h-8 text-purple-600" />
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-[#5A2475]/10 rounded-2xl mb-4">
+                        <UserPlus className="w-8 h-8 text-[#5A2475]" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
                     <p className="text-gray-600 mt-2">Join our marketplace today</p>
@@ -68,7 +68,7 @@ export default function RegisterPage() {
                             required
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                         />
                     </div>
 
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                             required
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                         />
                     </div>
 
@@ -93,7 +93,7 @@ export default function RegisterPage() {
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                         />
                     </div>
 
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                             required
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                             placeholder="Minimum 6 characters"
                         />
                     </div>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                         <select
                             value={formData.role}
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                         >
                             <option value="buyer">Buy products</option>
                             <option value="seller">Sell products</option>
@@ -129,7 +129,7 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 px-4 bg-[#963CC3] text-white font-medium rounded-xl shadow-lg shadow-[#963CC3]/25 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Creating account...' : 'Create Account'}
                     </button>
@@ -154,7 +154,7 @@ export default function RegisterPage() {
                         Already have an account?{' '}
                         <button
                             onClick={() => router.push('/auth/login')}
-                            className="text-purple-600 hover:text-purple-700 font-medium"
+                            className="text-[#5A2475] hover:text-[#963CC3] font-medium"
                         >
                             Sign In
                         </button>

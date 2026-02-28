@@ -88,7 +88,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">Đang tải...</p>
       </div>
     );
@@ -97,12 +97,12 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+              <div className="w-20 h-20 rounded-full bg-[#5A2475] flex items-center justify-center text-white text-3xl font-bold">
                 {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
@@ -113,7 +113,7 @@ export default function ProfilePage() {
             {!editing ? (
               <button
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="flex items-center gap-2 px-4 py-2 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10"
               >
                 <Pencil className="w-4 h-4" />
                 Chỉnh sửa hồ sơ
@@ -128,7 +128,7 @@ export default function ProfilePage() {
                     setFieldErrors({});
                   }}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="flex items-center gap-2 px-4 py-2 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10"
                 >
                   <X className="w-4 h-4" />
                   Hủy
@@ -136,7 +136,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" />
                   {saving ? 'Đang lưu...' : 'Lưu'}
@@ -157,7 +157,7 @@ export default function ProfilePage() {
                   type="text"
                   value={form.fullName}
                   onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-[#5A2475]/20 rounded-xl focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40"
                   placeholder="Họ và tên"
                 />
                 {fieldErrors.fullName && (
@@ -170,7 +170,7 @@ export default function ProfilePage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-[#5A2475]/20 rounded-xl focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40"
                   placeholder="email@example.com"
                 />
                 {fieldErrors.email && (
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                   type="tel"
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-[#5A2475]/20 rounded-xl focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40"
                   placeholder="0912345678 hoặc +84912345678"
                 />
                 {fieldErrors.phone && (
@@ -196,35 +196,35 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-[#5A2475]/5 rounded-xl">
                 <User className="w-5 h-5 text-gray-500" />
                 <div>
                   <div className="text-sm text-gray-500">Họ tên</div>
                   <div className="font-medium text-gray-900">{user.fullName || 'Chưa cập nhật'}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-[#5A2475]/5 rounded-xl">
                 <Mail className="w-5 h-5 text-gray-500" />
                 <div>
                   <div className="text-sm text-gray-500">Email</div>
                   <div className="font-medium text-gray-900">{user.email}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-[#5A2475]/5 rounded-xl">
                 <Phone className="w-5 h-5 text-gray-500" />
                 <div>
                   <div className="text-sm text-gray-500">Số điện thoại</div>
                   <div className="font-medium text-gray-900">{user.phone || 'Chưa thêm'}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-[#5A2475]/5 rounded-xl">
                 <Shield className="w-5 h-5 text-gray-500" />
                 <div>
                   <div className="text-sm text-gray-500">Vai trò</div>
                   <div className="font-medium text-gray-900 capitalize">
                     {user.role || 'buyer'}
                     {user.role === 'admin' && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">
+                      <span className="ml-2 px-2 py-0.5 text-xs bg-[#5A2475]/10 text-[#5A2475] rounded-full">
                         Admin
                       </span>
                     )}
@@ -234,10 +234,10 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="mt-6 pt-6 border-t border-[#5A2475]/15">
             <button
               onClick={() => router.push('/my-products')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-[#963CC3] text-white rounded-xl hover:opacity-90 transition-all"
             >
               Xem sản phẩm của tôi
             </button>

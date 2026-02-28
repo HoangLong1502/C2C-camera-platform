@@ -23,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { ChatModule } from './chat/chat.module';
 import { AdminModule } from './admin/admin.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { AdminModule } from './admin/admin.module';
     ProductsModule,
     ChatModule,
     AdminModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

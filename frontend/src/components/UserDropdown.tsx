@@ -68,10 +68,10 @@ export default function UserDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#5A2475]/10 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+          <div className="w-8 h-8 rounded-full bg-[#5A2475] flex items-center justify-center text-white font-semibold">
             {user.fullName?.[0]?.toUpperCase() || user.email[0]?.toUpperCase() || 'U'}
           </div>
           <div className="text-left hidden sm:block">
@@ -79,7 +79,7 @@ export default function UserDropdown() {
               {user.fullName || user.email}
             </div>
             {user.role === 'admin' && (
-              <div className="text-xs text-purple-600">Admin</div>
+              <div className="text-xs text-[#5A2475]">Admin</div>
             )}
           </div>
         </div>
@@ -89,14 +89,14 @@ export default function UserDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-[#5A2475]/15 py-1 z-50">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             return (
               <button
                 key={index}
                 onClick={item.onClick}
-                className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-[#5A2475]/10 transition-colors ${
                   item.className || ''
                 }`}
               >

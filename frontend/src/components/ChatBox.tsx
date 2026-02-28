@@ -122,7 +122,7 @@ export function ChatBox({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#5A2475]/50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[80vh]">
         <div className="flex items-center justify-between p-3 border-b">
           <div>
@@ -132,7 +132,7 @@ export function ChatBox({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+            className="p-2 rounded-lg hover:bg-[#5A2475]/10 text-[#5A2475]"
             aria-label="Đóng"
           >
             <X className="w-5 h-5" />
@@ -164,15 +164,15 @@ export function ChatBox({
                   <div
                     className={`max-w-[80%] rounded-lg px-3 py-2 ${
                       isMe
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-[#963CC3] text-white'
+                        : 'bg-[#5A2475]/10 text-[#1a1625]'
                     }`}
                   >
                     {!isMe && m.sender?.fullName && (
                       <p className="text-xs opacity-80 mb-0.5">{m.sender.fullName}</p>
                     )}
                     <p className="text-sm whitespace-pre-wrap break-words">{m.message}</p>
-                    <p className={`text-xs mt-1 ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
+                    <p className={`text-xs mt-1 ${isMe ? 'text-white/90' : 'text-gray-500'}`}>
                       {new Date(m.createdAt).toLocaleTimeString('vi-VN', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -192,14 +192,14 @@ export function ChatBox({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
             placeholder="Nhập tin nhắn..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="flex-1 px-3 py-2 border border-[#5A2475]/20 rounded-lg focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 outline-none"
             disabled={!connected || sending}
           />
           <button
             type="button"
             onClick={send}
             disabled={!input.trim() || !connected || sending}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           >
             <Send className="w-4 h-4" />
             Gửi

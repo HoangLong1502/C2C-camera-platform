@@ -27,11 +27,11 @@ export default function AppHeader() {
   }, [user]);
 
   return (
-    <header className="bg-white shadow">
+    <header className="bg-white/90 backdrop-blur-md border-b border-[#5A2475]/10 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 text-gray-900 hover:opacity-90">
-            <Camera className="w-8 h-8 text-blue-600" />
+            <Camera className="w-8 h-8 text-[#5A2475]" />
             <h1 className="text-xl font-bold">C2C Camera Platform</h1>
           </Link>
           <div className="flex gap-3 items-center">
@@ -39,14 +39,14 @@ export default function AppHeader() {
               <>
                 <button
                   onClick={() => router.push('/products/create')}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#963CC3] text-white hover:opacity-90 rounded-lg transition-colors text-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Đăng</span>
                 </button>
                 <button
                   onClick={() => router.push('/messages')}
-                  className="relative p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                  className="relative p-2 rounded-lg hover:bg-[#5A2475]/10 text-[#5A2475]"
                   title="Tin nhắn"
                   aria-label="Tin nhắn"
                 >
@@ -63,13 +63,13 @@ export default function AppHeader() {
               <>
                 <button
                   onClick={() => router.push('/auth/login')}
-                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm"
+                  className="px-4 py-2 text-[#5A2475] hover:bg-[#5A2475]/10 rounded-lg text-sm"
                 >
                   Đăng nhập
                 </button>
                 <button
                   onClick={() => router.push('/auth/register')}
-                  className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm"
+                  className="px-4 py-2 bg-[#963CC3] text-white hover:opacity-90 rounded-lg text-sm"
                 >
                   Đăng ký
                 </button>

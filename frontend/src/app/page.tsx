@@ -132,53 +132,33 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b flex justify-center gap-6 py-3">
-        <button
-          onClick={() => handleCategoryClick('all')}
-          className={`font-medium transition-colors ${
-            !selectedCategory 
-              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-              : 'text-gray-700 hover:text-blue-600'
-          }`}
-        >
-          Tất cả
-        </button>
-        <button
-          onClick={() => handleCategoryClick('camera')}
-          className={`font-medium transition-colors ${
-            selectedCategory === '1' 
-              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-              : 'text-gray-700 hover:text-blue-600'
-          }`}
-        >
-          Máy ảnh
-        </button>
-        <button
-          onClick={() => handleCategoryClick('lens')}
-          className={`font-medium transition-colors ${
-            selectedCategory === '2' 
-              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-              : 'text-gray-700 hover:text-blue-600'
-          }`}
-        >
-          Ống kính
-        </button>
-        <button
-          onClick={() => handleCategoryClick('accessory')}
-          className={`font-medium transition-colors ${
-            selectedCategory === '3' 
-              ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-              : 'text-gray-700 hover:text-blue-600'
-          }`}
-        >
-          Phụ kiện
-        </button>
+    <div className="min-h-screen">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-[#5A2475]/10 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 flex justify-center gap-1 py-3 text-[#1c1c1c]">
+          {[
+            { key: 'all', label: 'Tất cả', value: undefined },
+            { key: 'camera', label: 'Máy ảnh', value: '1' },
+            { key: 'lens', label: 'Ống kính', value: '2' },
+            { key: 'accessory', label: 'Phụ kiện', value: '3' },
+          ].map(({ key, label, value }) => (
+            <button
+              key={key}
+              onClick={() => handleCategoryClick(key)}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                selectedCategory === value
+                  ? 'text-white bg-[#5A2475] shadow-lg shadow-[#5A2475]/25'
+                  : 'text-[#5A2475]/80 hover:bg-[#5A2475]/10 hover:text-[#5A2475]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="relative flex gap-2">
+          <div className="relative flex gap-3">
             <div className="relative flex-1">
               <input
                 type="text"
@@ -186,14 +166,14 @@ export default function Home() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
+                className="w-full px-4 py-3.5 pl-12 border border-[#5A2475]/20 rounded-xl focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium bg-white/90 shadow-sm transition-shadow"
               />
-              <Search className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-3.5 w-5 h-5 text-[#5A2475]/60" />
             </div>
             <button
               onClick={handleSearch}
               disabled={loading}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3.5 bg-[#963CC3] text-white rounded-xl font-medium shadow-lg shadow-[#963CC3]/25 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Tìm kiếm
             </button>
@@ -294,10 +274,10 @@ export default function Home() {
                 return (
                   <div
                     key={product.id}
-                    className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+                    className="bg-white rounded-2xl shadow-md border border-[#5A2475]/5 overflow-hidden card-hover"
                   >
                     <div 
-                      className="h-48 bg-gradient-to-br from-blue-400 to-purple-500 rounded-t-lg flex items-center justify-center overflow-hidden cursor-pointer relative"
+                      className="h-48 bg-gradient-to-br from-[#5A2475] to-[#963CC3] flex items-center justify-center overflow-hidden cursor-pointer relative"
                       onClick={() => router.push(`/products/${product.id}`)}
                     >
                       {isValidImage ? (
@@ -327,7 +307,7 @@ export default function Home() {
                     <div className="p-4">
                       <div className="mb-3">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-2xl font-bold text-blue-600">
+                          <span className="text-2xl font-bold text-[#5A2475]">
                             {formatPrice(product.price)} đ
                           </span>
                         </div>
@@ -348,7 +328,7 @@ export default function Home() {
                       </div>
                       <button
                         onClick={() => router.push(`/products/${product.id}`)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#963CC3] text-white rounded-xl font-medium shadow-md shadow-[#963CC3]/20 hover:opacity-90 transition-all"
                       >
                         <ShoppingCart className="w-5 h-5" />
                         Mua ngay
