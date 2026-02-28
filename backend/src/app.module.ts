@@ -24,6 +24,9 @@ import { ProductsModule } from './products/products.module';
 import { ChatModule } from './chat/chat.module';
 import { AdminModule } from './admin/admin.module';
 import { OrdersModule } from './orders/orders.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { WalletTopup } from './entities/wallet-topup.entity';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -53,6 +56,7 @@ import { OrdersModule } from './orders/orders.module';
           Review,
           Payment,
           Notification,
+          WalletTopup,
           Promotion,
           Dispute,
           Subscription,
@@ -72,6 +76,8 @@ import { OrdersModule } from './orders/orders.module';
     ChatModule,
     AdminModule,
     OrdersModule,
+    NotificationsModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],

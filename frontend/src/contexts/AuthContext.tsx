@@ -9,6 +9,7 @@ interface User {
     fullName: string;
     role: string;
     phone?: string | null;
+    walletBalance?: number | string | null;
 }
 
 interface AuthContextType {

@@ -46,7 +46,7 @@ export class Transaction {
     commissionStatus!: CommissionStatus;
 
     @Column({ name: 'paid_at', type: 'timestamp', nullable: true })
-    paidAt: Date;
+    paidAt: Date | null;
 
     @ManyToOne(() => Order, (order) => order.transactions, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'order_id' })
