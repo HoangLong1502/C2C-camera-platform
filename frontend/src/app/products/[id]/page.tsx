@@ -71,8 +71,8 @@ export default function ProductDetailPage() {
       router.push('/auth/login');
       return;
     }
-    // TODO: Implement buy functionality
-    alert('Chức năng mua hàng sẽ được thêm sau!');
+    if (!product?.id) return;
+    router.push(`/checkout?productId=${product.id}`);
   };
 
   const handleChat = async () => {
@@ -211,7 +211,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500 text-lg">Đang tải sản phẩm...</p>
       </div>
     );
@@ -219,12 +219,12 @@ export default function ProductDetailPage() {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 text-lg mb-4">{error || 'Không tìm thấy sản phẩm'}</p>
           <button
             onClick={() => router.push('/')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 shadow-lg shadow-[#963CC3]/25"
           >
             Về trang chủ
           </button>
@@ -234,7 +234,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
         <button
           onClick={() => router.back()}
@@ -248,7 +248,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Image Gallery */}
             <div>
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 flex items-center justify-center relative">
+              <div className="aspect-square bg-[#5A2475]/8 rounded-xl overflow-hidden mb-4 flex items-center justify-center relative">
                 {isValidMainImage ? (
                   <img
                     src={mainImage}
@@ -289,7 +289,7 @@ export default function ProductDetailPage() {
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
                         className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                          selectedImageIndex === index ? 'border-blue-600' : 'border-gray-200'
+                          selectedImageIndex === index ? 'border-[#5A2475] ring-2 ring-[#5A2475]/20' : 'border-[#5A2475]/15'
                         }`}
                       >
                         {isValidImage ? (
@@ -303,7 +303,7 @@ export default function ProductDetailPage() {
                             }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <div className="w-full h-full bg-[#5A2475]/10 flex items-center justify-center">
                             <span className="text-2xl">📦</span>
                           </div>
                         )}
@@ -319,7 +319,7 @@ export default function ProductDetailPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
               
               <div className="mb-6">
-                <span className="text-4xl font-bold text-blue-600">
+                <span className="text-4xl font-bold text-[#5A2475]">
                   {formatPrice(product.price)} đ
                 </span>
               </div>
@@ -369,7 +369,7 @@ export default function ProductDetailPage() {
                   <button
                     onClick={openStatsModal}
                     disabled={statsLoading}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10 transition-colors font-medium"
                     title="Số người đã xem và đã nhắn tin"
                   >
                     <Eye className="w-5 h-5" />
@@ -379,7 +379,7 @@ export default function ProductDetailPage() {
                   <>
                     <button
                       onClick={handleBuy}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#963CC3] text-white rounded-xl font-medium text-lg shadow-lg shadow-[#963CC3]/25 hover:opacity-90 transition-all"
                     >
                       <ShoppingCart className="w-6 h-6" />
                       Mua ngay
@@ -388,7 +388,7 @@ export default function ProductDetailPage() {
                       <button
                         onClick={handleChat}
                         disabled={chatOpening}
-                        className="flex items-center justify-center gap-1.5 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium shrink-0"
+                        className="flex items-center justify-center gap-1.5 px-4 py-3 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10 transition-colors text-sm font-medium shrink-0"
                         title="Chat với người bán"
                       >
                         <MessageCircle className="w-4 h-4" />
@@ -399,11 +399,11 @@ export default function ProductDetailPage() {
                 )}
               </div>
               {statsOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setStatsOpen(false)}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#5A2475]/50 p-4" onClick={() => setStatsOpen(false)}>
                   <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">Thống kê sản phẩm</h3>
-                      <button type="button" onClick={() => setStatsOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                      <button type="button" onClick={() => setStatsOpen(false)} className="p-2 rounded-lg hover:bg-[#5A2475]/10 text-[#5A2475]">
                         <X className="w-5 h-5" />
                       </button>
                     </div>
@@ -422,12 +422,12 @@ export default function ProductDetailPage() {
                           ) : (
                             <ul className="space-y-2">
                               {stats.chattedUsers.map((r) => (
-                                <li key={r.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                <li key={r.id} className="flex justify-between items-center py-2 border-b border-[#5A2475]/10 last:border-0">
                                   <span className="text-gray-900">{r.otherUser?.fullName ?? 'Người dùng'}</span>
                                   <button
                                     type="button"
                                     onClick={() => openChatFromStats(r.id, r.otherUser?.fullName ?? 'Người dùng')}
-                                    className="text-sm text-blue-600 hover:underline"
+                                    className="text-sm text-[#5A2475] hover:text-[#963CC3] font-medium"
                                   >
                                     Nhắn tin
                                   </button>

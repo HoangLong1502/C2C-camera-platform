@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f6fc;
+  --foreground: #1a1625;
+  --brand-dark: #5A2475;
+  --brand-accent: #963CC3;
+  --brand-glow: rgba(90, 36, 117, 0.15);
+  --brand-accent-glow: rgba(150, 60, 195, 0.2);
+  --surface: #ffffff;
+  --surface-subtle: rgba(90, 36, 117, 0.06);
+  --overlay: rgba(90, 36, 117, 0.45);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-accent: var(--brand-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Subtle futuristic page background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--brand-accent-glow), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, var(--brand-glow), transparent),
+    radial-gradient(ellipse 60% 40% at 0% 50%, var(--brand-glow), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Modern focus ring */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--brand-dark);
+  outline-offset: 2px;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px -12px var(--brand-glow), 0 0 0 1px rgba(90, 36, 117, 0.06);
+}
+
+/* Button primary (accent) */
+.btn-primary {
+  background: var(--brand-accent);
+  color: white;
+  transition: opacity 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
+  box-shadow: 0 4px 20px var(--brand-accent-glow);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1522;
+    --foreground: #e8e4ef;
+    --surface: #231d30;
+    --surface-subtle: rgba(150, 60, 195, 0.1);
+    --overlay: rgba(26, 21, 34, 0.75);
+    --brand-glow: rgba(90, 36, 117, 0.25);
+    --brand-accent-glow: rgba(150, 60, 195, 0.3);
+  }
 }

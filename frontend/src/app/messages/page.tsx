@@ -36,7 +36,7 @@ export default function MessagesPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <button
           onClick={() => router.push('/')}
@@ -64,7 +64,7 @@ export default function MessagesPage() {
                     setOpenRoomOtherName(room.otherUser?.fullName ?? 'Người dùng');
                     setOpenRoomProductName(room.productId ? `Sản phẩm #${room.productId}` : 'Tin nhắn');
                   }}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#5A2475]/10"
                 >
                   <span className="font-medium text-gray-900">{room.otherUser?.fullName ?? 'Người dùng'}</span>
                   {room.unreadCount && room.unreadCount > 0 ? (

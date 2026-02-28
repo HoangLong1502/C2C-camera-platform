@@ -37,11 +37,11 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center py-12 px-4">
-            <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+        <div className="min-h-screen bg-gradient-to-br from-[#5A2475] via-[#6B2D8A] to-[#963CC3] flex items-center justify-center py-12 px-4">
+            <div className="max-w-md w-full bg-white/95 backdrop-blur rounded-2xl shadow-2xl shadow-[#5A2475]/20 p-8 border border-[#5A2475]/10">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                        <LogIn className="w-8 h-8 text-blue-600" />
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-[#5A2475]/10 rounded-2xl mb-4">
+                        <LogIn className="w-8 h-8 text-[#5A2475]" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
                     <p className="text-gray-600 mt-2">Sign in to your account</p>
@@ -63,7 +63,7 @@ export default function LoginPage() {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-3 border border-[#5A2475]/20 rounded-xl focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                             placeholder="you@example.com"
                         />
                     </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
+                            className="w-full px-4 py-3 border border-[#5A2475]/20 rounded-xl focus:ring-2 focus:ring-[#5A2475] focus:border-[#5A2475]/40 text-gray-900 font-medium"
                             placeholder="••••••••"
                         />
                     </div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 px-4 bg-[#963CC3] text-white font-medium rounded-xl shadow-lg shadow-[#963CC3]/25 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                         Don't have an account?{' '}
                         <button
                             onClick={() => router.push('/auth/register')}
-                            className="text-blue-600 hover:text-blue-700 font-medium"
+                            className="text-[#5A2475] hover:text-[#963CC3] font-medium"
                         >
                             Sign Up
                         </button>

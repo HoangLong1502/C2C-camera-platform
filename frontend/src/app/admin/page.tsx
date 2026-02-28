@@ -49,7 +49,7 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">Đang tải...</p>
       </div>
     );
@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
   if (!user || user.role !== 'admin') return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
         <button
           onClick={() => router.push('/')}
@@ -84,9 +84,9 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
-                <div className="h-12 w-12 bg-gray-200 rounded-lg mb-4" />
-                <div className="h-6 bg-gray-200 rounded w-24 mb-2" />
-                <div className="h-8 bg-gray-200 rounded w-16" />
+                <div className="h-12 w-12 bg-[#5A2475]/15 rounded-lg mb-4" />
+                <div className="h-6 bg-[#5A2475]/15 rounded w-24 mb-2" />
+                <div className="h-8 bg-[#5A2475]/15 rounded w-16" />
               </div>
             ))}
           </div>
@@ -95,8 +95,8 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Package className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-[#5A2475]/10 rounded-lg flex items-center justify-center">
+                    <Package className="w-6 h-6 text-[#5A2475]" />
                   </div>
                   <span className="text-sm font-medium text-gray-500">Tổng bài đăng</span>
                 </div>
@@ -165,21 +165,21 @@ export default function AdminDashboardPage() {
               <div className="flex flex-wrap gap-4">
                 <button
                   onClick={() => router.push('/')}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 transition-colors"
                 >
                   <Package className="w-5 h-5" />
                   Xem danh sách sản phẩm
                 </button>
                 <button
                   onClick={() => router.push('/products/create')}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10 transition-colors"
                 >
                   <Package className="w-5 h-5" />
                   Đăng sản phẩm
                 </button>
                 <button
                   onClick={() => router.push('/my-products')}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10 transition-colors"
                 >
                   <ShoppingBag className="w-5 h-5" />
                   Sản phẩm của tôi
