@@ -69,9 +69,14 @@ export class ProductsController {
         return { ok: true };
     }
 
+    @UseGuards(OptionalJwtAuthGuard)
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.productsService.findOne(+id);
+    findOne(@Param('id') id: string, @Req() req: Request & { user?: any }) {
+        const user = req.user;
+        const viewer = user
+            ? { userId: user.userId ?? user.sub, isAdmin: user.role === UserRole.ADMIN }
+            : undefined;
+        return this.productsService.findOne(+id, viewer);
     }
 
     @UseGuards(JwtAuthGuard)

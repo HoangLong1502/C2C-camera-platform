@@ -51,9 +51,18 @@ export class Product {
     @Column({
         type: 'enum',
         enum: ProductStatus,
-        default: ProductStatus.APPROVED, // Auto-approve by default, moderation will be added later
+        default: ProductStatus.PENDING_APPROVAL,
     })
     status: ProductStatus;
+
+    @Column({ name: 'admin_comment', type: 'text', nullable: true })
+    adminComment: string | null;
+
+    @Column({ name: 'approved_at', type: 'timestamp', nullable: true })
+    approvedAt: Date | null;
+
+    @Column({ name: 'approved_by', type: 'int', nullable: true })
+    approvedBy: number | null;
 
     @Column({ default: 0 })
     stock: number;
