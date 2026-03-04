@@ -82,6 +82,24 @@ button:focus-visible {
   transform: scale(0.98);
 }
 
+/* Soft brand-tinted gradient shell for headers/navs */
+.shell-gradient {
+  background:
+    linear-gradient(135deg, rgba(150, 60, 195, 0.16), transparent 55%),
+    linear-gradient(225deg, rgba(90, 36, 117, 0.12), transparent 60%),
+    rgba(255, 255, 255, 0.94);
+}
+
+/* Glassy elevated panel with subtle fading color */
+.glass-panel {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.98), rgba(248, 246, 252, 0.96));
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 18px 50px -28px var(--brand-glow);
+  backdrop-filter: blur(18px);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #1a1522;

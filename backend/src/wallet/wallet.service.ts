@@ -85,7 +85,7 @@ export class WalletService {
       vnp_OrderInfo: `Nap vi user ${userId} (txn ${txnRef})`,
       vnp_OrderType: 'other',
       vnp_Locale: 'vn',
-      vnp_ReturnUrl: `${backendPublicUrl.replace(/\\/$/, '')}/wallet/vnpay/return`,
+      vnp_ReturnUrl: `${backendPublicUrl.endsWith('/') ? backendPublicUrl.slice(0, -1) : backendPublicUrl}/wallet/vnpay/return`,
       vnp_IpAddr: ipAddr,
       vnp_CreateDate: formatVnpDate(now),
       vnp_ExpireDate: formatVnpDate(expire),

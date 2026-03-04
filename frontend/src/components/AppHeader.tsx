@@ -28,7 +28,7 @@ export default function AppHeader() {
   }, [user]);
 
   return (
-    <header className="bg-white/90 backdrop-blur-md border-b border-[#5A2475]/10 shadow-sm sticky top-0 z-50">
+    <header className="shell-gradient backdrop-blur-xl border-b border-[#5A2475]/10 shadow-[0_10px_40px_rgba(26,21,34,0.10)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 text-gray-900 hover:opacity-90">

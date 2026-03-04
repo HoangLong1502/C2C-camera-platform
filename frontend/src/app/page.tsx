@@ -12,7 +12,7 @@ interface Product {
   name: string;
   description: string;
   price: number | string; // Can be string from database decimal
-  images: string[] | null;
+  images: string[] | string | null; // API may return array or legacy string
   location: string | null;
   seller: {
     id: number;
@@ -133,8 +133,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <nav className="bg-white/80 backdrop-blur-md border-b border-[#5A2475]/10 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 flex justify-center gap-1 py-3 text-[#1c1c1c]">
+      <nav className="sticky top-0 z-10 bg-[#f8f6fc]/95 backdrop-blur-sm border-b border-[#5A2475]/8">
+        <div className="max-w-7xl mx-auto px-4 flex justify-center gap-2 py-3 text-[#1c1c1c]">
           {[
             { key: 'all', label: 'Tất cả', value: undefined },
             { key: 'camera', label: 'Máy ảnh', value: '1' },
@@ -144,10 +144,10 @@ export default function Home() {
             <button
               key={key}
               onClick={() => handleCategoryClick(key)}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+              className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
                 selectedCategory === value
-                  ? 'text-white bg-[#5A2475] shadow-lg shadow-[#5A2475]/25'
-                  : 'text-[#5A2475]/80 hover:bg-[#5A2475]/10 hover:text-[#5A2475]'
+                  ? 'text-white bg-[#5A2475] shadow-md shadow-[#5A2475]/20'
+                  : 'text-[#5A2475]/90 hover:bg-[#5A2475]/10 hover:text-[#5A2475]'
               }`}
             >
               {label}
@@ -249,7 +249,8 @@ export default function Home() {
                       }
                     } catch (e) {
                       // Not JSON, treat as comma-separated (legacy format)
-                      const images = product.images.split(',').map(img => img.trim()).filter(img => {
+                      const raw = typeof product.images === 'string' ? product.images : '';
+                      const images = raw.split(',').map((img: string) => img.trim()).filter((img: string) => {
                         if (img.length === 0) return false;
                         const isValid = img.startsWith('data:image') && img.includes('base64,');
                         if (!isValid || img.length < 100) {

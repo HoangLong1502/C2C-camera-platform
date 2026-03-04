@@ -16,7 +16,7 @@ export class NotificationsService {
       type,
       title,
       message,
-      link: link ?? null,
+      ...(link != null && link !== '' && { link }),
     });
     return this.notificationRepo.save(notification);
   }
