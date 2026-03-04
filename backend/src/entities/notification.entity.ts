@@ -19,7 +19,7 @@ export class Notification {
     message: string;
 
     @Column({ type: 'varchar', length: 500, nullable: true })
-    link: string;
+    link: string | null;
 
     @Column({ default: false })
     read: boolean;
