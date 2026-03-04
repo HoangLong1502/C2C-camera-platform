@@ -5,10 +5,12 @@ import { Product } from '../entities/product.entity';
 import { ChatRoom } from '../entities/chat-room.entity';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Product, ChatRoom]),
+    NotificationsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

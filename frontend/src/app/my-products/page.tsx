@@ -14,10 +14,18 @@ interface Product {
   price: number | string;
   images: string[] | null;
   status: string;
+  adminComment?: string | null;
   condition: string;
   stock: number;
   createdAt: string;
 }
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_approval: 'Chờ duyệt',
+  approved: 'Đã duyệt',
+  rejected: 'Từ chối',
+  draft: 'Nháp',
+};
 
 export default function MyProductsPage() {
   const router = useRouter();
@@ -199,12 +207,18 @@ export default function MyProductsPage() {
                         product.status
                       )}`}
                     >
-                      {product.status.replace('_', ' ')}
+                      {STATUS_LABELS[product.status] ?? product.status.replace('_', ' ')}
                     </span>
                   </div>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                     {product.description}
                   </p>
+                  {product.status === 'rejected' && product.adminComment && (
+                    <div className="mb-3 p-2 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                      <span className="font-medium">Lý do từ chối: </span>
+                      {product.adminComment}
+                    </div>
+                  )}
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-xl font-bold text-[#5A2475]">
                       {formatPrice(product.price)} đ
@@ -216,10 +230,14 @@ export default function MyProductsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => router.push(`/products/${product.id}/edit`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#5A2475]/10 text-[#5A2475] rounded-xl hover:bg-[#5A2475]/20 transition-colors"
+                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-colors ${
+                        product.status === 'rejected'
+                          ? 'bg-amber-500 text-white hover:bg-amber-600'
+                          : 'bg-[#5A2475]/10 text-[#5A2475] hover:bg-[#5A2475]/20'
+                      }`}
                     >
                       <Edit className="w-4 h-4" />
-                      Sửa
+                      {product.status === 'rejected' ? 'Chỉnh sửa và gửi lại' : 'Sửa'}
                     </button>
                     <button
                       onClick={() => handleDelete(product.id)}

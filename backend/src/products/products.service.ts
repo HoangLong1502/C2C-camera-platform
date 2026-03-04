@@ -80,7 +80,7 @@ export class ProductsService {
                 condition: condition as ProductCondition,
                 stock: dto.stock ? Number(dto.stock) : 1,
                 sellerId: Number(userId),
-                status: ProductStatus.APPROVED, // Auto-approve products, moderation will be added later
+                status: ProductStatus.PENDING_APPROVAL,
             };
 
             // Location is required
@@ -260,7 +260,7 @@ export class ProductsService {
         return processedProducts;
     }
 
-    async findOne(id: number) {
+    async findOne(id: number, viewer?: { userId?: number; isAdmin?: boolean }) {
         const product = await this.productRepository.findOne({
             where: { id },
             relations: ['seller'],
@@ -268,6 +268,15 @@ export class ProductsService {
 
         if (!product) {
             throw new NotFoundException('Product not found');
+        }
+
+        // Non-approved products: only seller or admin can view
+        if (product.status !== ProductStatus.APPROVED) {
+            const isOwner = viewer?.userId != null && product.sellerId === viewer.userId;
+            const isAdmin = viewer?.isAdmin === true;
+            if (!isOwner && !isAdmin) {
+                throw new NotFoundException('Product not found');
+            }
         }
 
         // Increment view count
@@ -365,6 +374,14 @@ export class ProductsService {
 
         if (product.sellerId !== userId) {
             throw new ForbiddenException('You can only update your own products');
+        }
+
+        // When resubmitting after reject: clear admin fields and set back to pending
+        if (product.status === ProductStatus.REJECTED) {
+            product.status = ProductStatus.PENDING_APPROVAL;
+            product.adminComment = null;
+            product.approvedAt = null;
+            product.approvedBy = null;
         }
 
         Object.assign(product, dto);
