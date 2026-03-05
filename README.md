@@ -102,9 +102,9 @@ Create/update `backend/.env`:
 ```env
 # Database Configuration
 DATABASE_HOST=localhost
-DATABASE_PORT=5440        # or your actual Postgres port (e.g. 5432)
+DATABASE_PORT=5440              # or your actual Postgres port (e.g. 5432)
 DATABASE_USER=postgres
-DATABASE_PASSWORD=12343
+DATABASE_PASSWORD=your-db-password
 DATABASE_NAME=camera_web
 
 # Server Configuration
