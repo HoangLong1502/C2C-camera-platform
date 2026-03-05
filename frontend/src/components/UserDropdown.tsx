@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/lib/formatPrice';
-import { User, ChevronDown, LogOut, Package, Wallet, Settings, ShoppingBag } from 'lucide-react';
+import { User, ChevronDown, LogOut, Package, Wallet, ShoppingBag } from 'lucide-react';
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,18 +58,6 @@ export default function UserDropdown() {
         setIsOpen(false);
       },
     },
-    ...(user.role === 'admin'
-      ? [
-          {
-            label: 'Admin Dashboard',
-            icon: Settings,
-            onClick: () => {
-              router.push('/admin');
-              setIsOpen(false);
-            },
-          },
-        ]
-      : []),
     {
       label: 'Logout',
       icon: LogOut,

@@ -17,6 +17,11 @@ export class AdminController {
     return this.adminService.getDashboardStats();
   }
 
+  @Get('products/contacted')
+  getContactedProducts() {
+    return this.adminService.getContactedProducts();
+  }
+
   @Get('products/moderation')
   getProductsForModeration(@Query('status') status?: string) {
     const statusEnum = status ? (status as ProductStatus) : undefined;
@@ -24,18 +29,23 @@ export class AdminController {
   }
 
   @Patch('products/:id/approve')
-  approveProduct(@Param('id') id: string, @Req() req: { user: { userId?: number; sub?: number } }) {
-    const adminId = req.user?.userId ?? req.user?.sub;
-    return this.adminService.approveProduct(+id, adminId);
+  approveProduct(
+    @Param('id') id: string,
+    @Body('adminFee') adminFee: number | undefined,
+    @Req() req: { user: { userId: number } },
+  ) {
+    const adminId = req.user.userId;
+    const fee = typeof adminFee === 'string' ? parseFloat(adminFee) : adminFee;
+    return this.adminService.approveProduct(+id, adminId, fee);
   }
 
   @Patch('products/:id/reject')
   rejectProduct(
     @Param('id') id: string,
     @Body('reason') reason: string,
-    @Req() req: { user: { userId?: number; sub?: number } },
+    @Req() req: { user: { userId: number } },
   ) {
-    const adminId = req.user?.userId ?? req.user?.sub;
+    const adminId = req.user.userId;
     return this.adminService.rejectProduct(+id, adminId, reason ?? '');
   }
 }

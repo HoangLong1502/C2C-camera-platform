@@ -37,6 +37,7 @@ interface ModerationProduct {
   name: string;
   description: string;
   price: number;
+  adminFee?: number | null;
   status: string;
   adminComment?: string | null;
   seller?: { id: number; name?: string; email?: string };
@@ -55,6 +56,7 @@ export default function AdminDashboardPage() {
   const [rejectModal, setRejectModal] = useState<{ productId: number; productName: string } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [feeInputs, setFeeInputs] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -97,9 +99,17 @@ export default function AdminDashboardPage() {
   };
 
   const handleApprove = async (id: number) => {
+    const feeInput = feeInputs[id];
+    const adminFee = feeInput != null && feeInput.trim() !== '' ? parseFloat(feeInput) : undefined;
+    if (adminFee != null && (Number.isNaN(adminFee) || adminFee < 0)) {
+      alert('Phí phải là số không âm.');
+      return;
+    }
     setActionLoading(true);
     try {
-      await apiClient.patch(`/admin/products/${id}/approve`);
+      await apiClient.patch(`/admin/products/${id}/approve`, {
+        adminFee: adminFee,
+      });
       refreshModeration();
       if (stats) setStats({ ...stats, pendingApproval: Math.max(0, stats.pendingApproval - 1) });
     } catch (e: any) {
@@ -274,6 +284,7 @@ export default function AdminDashboardPage() {
                       <tr className="border-b border-gray-200">
                         <th className="pb-3 font-semibold text-gray-700">Bài đăng</th>
                         <th className="pb-3 font-semibold text-gray-700">Người đăng</th>
+                        <th className="pb-3 font-semibold text-gray-700">Giá</th>
                         <th className="pb-3 font-semibold text-gray-700">Trạng thái</th>
                         {moderationFilter === 'pending_approval' && (
                           <th className="pb-3 font-semibold text-gray-700">Thao tác</th>
@@ -286,6 +297,47 @@ export default function AdminDashboardPage() {
                     <tbody>
                       {moderationProducts.map((p) => (
                         <tr key={p.id} className="border-b border-gray-100">
+                          <td className="py-3 text-sm text-gray-700">
+                            <div>
+                              <span className="font-semibold">
+                                {p.price.toLocaleString('vi-VN')} đ
+                              </span>
+                            </div>
+                            <div className="mt-1 text-xs text-gray-500">
+                              Phí nền tảng:{' '}
+                              {p.adminFee != null
+                                ? `${p.adminFee.toLocaleString('vi-VN')} đ`
+                                : 'Chưa đặt'}
+                            </div>
+                            {moderationFilter === 'pending_approval' && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="1000"
+                                  value={feeInputs[p.id] ?? (p.adminFee != null ? String(p.adminFee) : '')}
+                                  onChange={(e) =>
+                                    setFeeInputs((prev) => ({
+                                      ...prev,
+                                      [p.id]: e.target.value,
+                                    }))
+                                  }
+                                  className="w-28 px-2 py-1 border border-gray-300 rounded text-xs"
+                                  placeholder="Nhập phí"
+                                />
+                                <span className="text-xs text-gray-500">
+                                  Thu về:{' '}
+                                  {(() => {
+                                    const feeStr = feeInputs[p.id] ?? (p.adminFee != null ? String(p.adminFee) : '');
+                                    const feeNum =
+                                      feeStr && !Number.isNaN(Number(feeStr)) ? Number(feeStr) : 0;
+                                    const net = Math.max(0, p.price - feeNum);
+                                    return `${net.toLocaleString('vi-VN')} đ`;
+                                  })()}
+                                </span>
+                              </div>
+                            )}
+                          </td>
                           <td className="py-3">
                             <div className="font-medium text-gray-900">{p.name}</div>
                             <div className="text-sm text-gray-500 line-clamp-1">{p.description}</div>
