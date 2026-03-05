@@ -45,6 +45,14 @@ export default function AppHeader() {
                   <Plus className="w-4 h-4" />
                   <span>Đăng</span>
                 </button>
+                {user.role === 'admin' && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className="flex items-center gap-2 px-3 py-2 border border-[#5A2475]/30 text-[#5A2475] hover:bg-[#5A2475]/10 rounded-lg transition-colors text-sm"
+                  >
+                    <span>Admin Dashboard</span>
+                  </button>
+                )}
                 <NotificationsDropdown />
                 <button
                   onClick={() => router.push('/messages')}

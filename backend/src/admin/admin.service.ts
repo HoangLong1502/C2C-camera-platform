@@ -16,6 +16,14 @@ export interface AdminDashboardStats {
   totalChatRooms: number;
 }
 
+export interface ContactedProductSummary {
+  id: number;
+  name: string;
+  price: number;
+  chatCount: number;
+  lastContactAt: Date | null;
+}
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -54,6 +62,29 @@ export class AdminService {
     };
   }
 
+  async getContactedProducts(): Promise<ContactedProductSummary[]> {
+    const rows = await this.chatRoomRepo
+      .createQueryBuilder('r')
+      .innerJoin(Product, 'p', 'p.id = r.product_id')
+      .select('p.id', 'id')
+      .addSelect('p.name', 'name')
+      .addSelect('p.price', 'price')
+      .addSelect('COUNT(DISTINCT r.id)', 'chatCount')
+      .addSelect('MAX(r.last_message_at)', 'lastContactAt')
+      .where('r.product_id IS NOT NULL')
+      .groupBy('p.id')
+      .orderBy('lastContactAt', 'DESC')
+      .getRawMany<{ id: number; name: string; price: string; chatCount: string; lastContactAt: Date | null }>();
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      name: row.name,
+      price: Number(row.price),
+      chatCount: Number(row.chatCount),
+      lastContactAt: row.lastContactAt,
+    }));
+  }
+
   async getProductsForModeration(status?: ProductStatus) {
     const where = status != null ? { status } : {};
     return this.productRepo.find({
@@ -63,7 +94,7 @@ export class AdminService {
     });
   }
 
-  async approveProduct(id: number, adminUserId: number) {
+  async approveProduct(id: number, adminUserId: number, adminFee?: number) {
     const product = await this.productRepo.findOne({
       where: { id },
       relations: ['seller'],
@@ -71,6 +102,9 @@ export class AdminService {
     if (!product) throw new NotFoundException('Product not found');
     if (product.status !== ProductStatus.PENDING_APPROVAL) {
       throw new BadRequestException('Chỉ có thể duyệt bài đang chờ kiểm duyệt.');
+    }
+    if (typeof adminFee === 'number' && !Number.isNaN(adminFee)) {
+      product.adminFee = adminFee;
     }
     product.status = ProductStatus.APPROVED;
     product.approvedAt = new Date();

@@ -35,6 +35,9 @@ export class Product {
     @Column({ type: 'decimal', precision: 12, scale: 2 })
     price: number;
 
+    @Column({ name: 'admin_fee', type: 'decimal', precision: 12, scale: 2, nullable: true })
+    adminFee: number | null;
+
     @Column({ name: 'category_id', nullable: true })
     categoryId: number;
 
