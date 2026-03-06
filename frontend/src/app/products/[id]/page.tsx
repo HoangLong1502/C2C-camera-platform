@@ -233,8 +233,10 @@ export default function ProductDetailPage() {
     );
   }
 
+  const isOwner = product.seller && user?.id === product.seller.id;
+
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-24 md:pb-8">
       <div className="max-w-7xl mx-auto px-4">
         <button
           onClick={() => router.back()}
@@ -364,7 +366,8 @@ export default function ProductDetailPage() {
                 <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
               </div>
 
-              <div className="flex gap-3">
+              {/* Primary CTAs — buy & chat */}
+              <div className="flex flex-col sm:flex-row gap-3">
                 {product.seller && user?.id === product.seller.id ? (
                   <button
                     onClick={openStatsModal}
@@ -379,25 +382,28 @@ export default function ProductDetailPage() {
                   <>
                     <button
                       onClick={handleBuy}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#963CC3] text-white rounded-xl font-medium text-lg shadow-lg shadow-[#963CC3]/25 hover:opacity-90 transition-all"
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#963CC3] text-white rounded-xl font-semibold text-lg shadow-lg shadow-[#963CC3]/25 hover:opacity-95 transition-all"
                     >
                       <ShoppingCart className="w-6 h-6" />
-                      Mua ngay
+                      Mua ngay — Thanh toán an toàn
                     </button>
                     {product.seller && user && user.id !== product.seller.id && (
                       <button
                         onClick={handleChat}
                         disabled={chatOpening}
-                        className="flex items-center justify-center gap-1.5 px-4 py-3 border border-[#5A2475]/20 text-[#1a1625] rounded-xl hover:bg-[#5A2475]/10 transition-colors text-sm font-medium shrink-0"
-                        title="Chat với người bán"
+                        className="flex items-center justify-center gap-2 px-5 py-3 border-2 border-[#5A2475]/30 text-[#5A2475] rounded-xl hover:bg-[#5A2475]/10 transition-colors font-medium shrink-0"
+                        title="Hỏi người bán trước khi mua"
                       >
-                        <MessageCircle className="w-4 h-4" />
-                        Chat
+                        <MessageCircle className="w-5 h-5" />
+                        Chat với người bán
                       </button>
                     )}
                   </>
                 )}
               </div>
+              {product.seller && user && user.id !== product.seller.id && (
+                <p className="text-sm text-gray-500 mt-2">Chat để hỏi giá, tình trạng hoặc thương lượng.</p>
+              )}
               {statsOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#5A2475]/50 p-4" onClick={() => setStatsOpen(false)}>
                   <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
@@ -453,6 +459,35 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Sticky CTA bar on mobile — always visible to push buy/chat */}
+        {!isOwner && product.seller && (
+          <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 safe-area-pb">
+            <div className="max-w-7xl mx-auto flex items-center gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500 truncate">Giá</p>
+                <p className="text-lg font-bold text-[#5A2475] truncate">{formatPrice(product.price)}₫</p>
+              </div>
+              <button
+                onClick={handleBuy}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#963CC3] text-white rounded-xl font-semibold text-sm shadow-lg"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                Mua ngay
+              </button>
+              {user && user.id !== product.seller.id && (
+                <button
+                  onClick={handleChat}
+                  disabled={chatOpening}
+                  className="flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-[#5A2475]/30 text-[#5A2475] rounded-xl font-medium text-sm shrink-0"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Chat
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

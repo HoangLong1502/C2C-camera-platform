@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, ShoppingCart } from 'lucide-react';
+import { Search, ShoppingCart, Store, MessageCircle, ArrowRight } from 'lucide-react';
 import { formatPrice } from '@/lib/formatPrice';
 
 interface Product {
@@ -156,7 +156,35 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Hero: push to buy & sell */}
+      <section className="bg-gradient-to-r from-[#5A2475] to-[#963CC3] text-white">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold">Mua camera giá tốt · Bán nhanh, an toàn</h2>
+              <p className="text-white/90 text-sm sm:text-base mt-1">Giao dịch trực tiếp với người mua, người bán. Đăng ký miễn phí.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => document.getElementById('product-list')?.scrollIntoView({ behavior: 'smooth' })}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#5A2475] rounded-xl font-semibold text-sm hover:bg-white/95 shadow-lg transition-all"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Xem sản phẩm
+              </button>
+              <button
+                onClick={() => user ? router.push('/products/create') : router.push('/auth/register')}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white/20 border border-white/40 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-all"
+              >
+                <Store className="w-4 h-4" />
+                {user ? 'Đăng bán ngay' : 'Bán ngay'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="product-list" className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="relative flex gap-3">
             <div className="relative flex-1">
@@ -193,9 +221,16 @@ export default function Home() {
         )}
 
         {!loading && !error && products.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Không có sản phẩm nào</p>
-            <p className="text-gray-400 text-sm mt-2">Hãy thử đăng sản phẩm đầu tiên!</p>
+          <div className="text-center py-16 px-4 bg-white rounded-2xl border border-[#5A2475]/10 shadow-sm">
+            <p className="text-gray-600 text-lg font-medium">Chưa có sản phẩm nào trong mục này</p>
+            <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">Bạn có camera hoặc phụ kiện cũ? Đăng bán miễn phí, giao dịch nhanh với người mua.</p>
+            <button
+              onClick={() => user ? router.push('/products/create') : router.push('/auth/register')}
+              className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-[#963CC3] text-white rounded-xl font-semibold shadow-lg shadow-[#963CC3]/25 hover:opacity-95 transition-all"
+            >
+              <Store className="w-5 h-5" />
+              {user ? 'Đăng sản phẩm ngay' : 'Đăng ký và bán ngay'}
+            </button>
           </div>
         )}
 
@@ -275,9 +310,9 @@ export default function Home() {
                 return (
                   <div
                     key={product.id}
-                    className="bg-white rounded-2xl shadow-md border border-[#5A2475]/5 overflow-hidden card-hover"
+                    className="bg-white rounded-2xl shadow-md border border-[#5A2475]/5 overflow-hidden hover:shadow-lg hover:border-[#5A2475]/15 transition-all"
                   >
-                    <div 
+                    <div
                       className="h-48 bg-gradient-to-br from-[#5A2475] to-[#963CC3] flex items-center justify-center overflow-hidden cursor-pointer relative"
                       onClick={() => router.push(`/products/${product.id}`)}
                     >
@@ -287,7 +322,6 @@ export default function Home() {
                           alt={product.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            console.error('Image load error for product', product.id, imageUrl?.substring(0, 50));
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent && !parent.querySelector('.placeholder')) {
@@ -297,43 +331,53 @@ export default function Home() {
                               parent.appendChild(placeholder);
                             }
                           }}
-                          onLoad={() => {
-                            console.log('Image loaded successfully for product', product.id);
-                          }}
                         />
                       ) : (
                         <span className="text-white text-6xl">📦</span>
                       )}
                     </div>
                     <div className="p-4">
-                      <div className="mb-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-2xl font-bold text-[#5A2475]">
-                            {formatPrice(product.price)} đ
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-1.5 text-sm">
-                          {product.location && (
-                            <div className="flex items-center gap-1.5 text-gray-600">
-                              <span className="text-gray-400">📍</span>
-                              <span className="truncate font-medium">{product.location}</span>
-                            </div>
-                          )}
-                          {product.seller && (
-                            <div className="flex items-center gap-1.5 text-gray-600">
-                              <span className="text-gray-400">👤</span>
-                              <span className="truncate font-medium">{product.seller.fullName || 'Người bán'}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <button
+                      <h3
+                        className="font-semibold text-gray-900 line-clamp-2 mb-1 cursor-pointer hover:text-[#5A2475]"
                         onClick={() => router.push(`/products/${product.id}`)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#963CC3] text-white rounded-xl font-medium shadow-md shadow-[#963CC3]/20 hover:opacity-90 transition-all"
                       >
-                        <ShoppingCart className="w-5 h-5" />
-                        Mua ngay
-                      </button>
+                        {product.name}
+                      </h3>
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="text-xl font-bold text-[#5A2475]">
+                          {formatPrice(product.price)}₫
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1 text-sm text-gray-500 mb-3">
+                        {product.location && (
+                          <span className="truncate">📍 {product.location}</span>
+                        )}
+                        {product.seller && (
+                          <span className="truncate">👤 {product.seller.fullName || 'Người bán'}</span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/products/${product.id}`);
+                          }}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-[#963CC3] text-white rounded-xl font-semibold text-sm shadow-md shadow-[#963CC3]/20 hover:opacity-95 transition-all"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          Mua ngay
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/products/${product.id}#chat`);
+                          }}
+                          className="flex items-center justify-center gap-1 px-3 py-2.5 border border-[#5A2475]/25 text-[#5A2475] rounded-xl font-medium text-sm hover:bg-[#5A2475]/10 transition-colors"
+                          title="Chat với người bán"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
