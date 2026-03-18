@@ -6,6 +6,8 @@ import { Product, ProductStatus, ProductCondition } from '../entities/product.en
 import { ProductView } from '../entities/product-view.entity';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { User } from '../entities/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { AutoModerationService } from './auto-moderation.service';
 
 @Injectable()
 export class ProductsService {
@@ -18,6 +20,8 @@ export class ProductsService {
         private productViewRepository: Repository<ProductView>,
         @InjectDataSource()
         private dataSource: DataSource,
+        private notificationsService: NotificationsService,
+        private autoModerationService: AutoModerationService,
     ) { }
 
     async create(userId: number, dto: CreateProductDto) {
@@ -174,6 +178,42 @@ export class ProductsService {
                 isArray: Array.isArray(imagesForLog),
                 imagesLength: typeof imagesForLog === 'string' ? imagesForLog.length : Array.isArray(imagesForLog) ? imagesForLog.length : 'N/A'
             });
+            // Auto-moderation (AI free) -> may auto-approve/publish
+            const autoApproveEnabled = (process.env.AUTO_APPROVE_ENABLED ?? 'true').toLowerCase() === 'true';
+            const result = this.autoModerationService.evaluate({
+                name: productResult.name,
+                description: productResult.description,
+                price: Number(productResult.price),
+                location: productResult.location,
+                categoryId: productResult.categoryId,
+                condition: productResult.condition,
+                stock: productResult.stock,
+                imagesCount: Array.isArray(productResult.images) ? productResult.images.length : 0,
+            });
+
+            productResult.moderationScore = result.score;
+            productResult.moderationIssues = result.issues.length ? result.issues : null;
+
+            if (autoApproveEnabled && result.passed) {
+                productResult.status = ProductStatus.APPROVED;
+                productResult.approvedAt = new Date();
+                productResult.approvedBy = null;
+                productResult.autoApproved = true;
+                productResult.adminComment = null;
+                await this.productRepository.save(productResult);
+                await this.notificationsService.create(
+                    productResult.sellerId,
+                    'product_approved',
+                    'Bài đăng đã được duyệt',
+                    'Bài đăng của bạn đã được hệ thống kiểm tra và được tự động duyệt.',
+                    `/products/${productResult.id}`,
+                );
+            } else {
+                // Persist moderation feedback for admin/seller to improve listing
+                productResult.autoApproved = false;
+                await this.productRepository.save(productResult);
+            }
+
             return productResult;
         } catch (error: any) {
             console.error('Error creating product:', error);
@@ -385,7 +425,46 @@ export class ProductsService {
         }
 
         Object.assign(product, dto);
-        return this.productRepository.save(product);
+        const saved = await this.productRepository.save(product);
+
+        // If product is pending (new or re-submitted), attempt auto-approve again
+        if (saved.status === ProductStatus.PENDING_APPROVAL) {
+            const autoApproveEnabled = (process.env.AUTO_APPROVE_ENABLED ?? 'true').toLowerCase() === 'true';
+            const result = this.autoModerationService.evaluate({
+                name: saved.name,
+                description: saved.description,
+                price: Number(saved.price),
+                location: saved.location,
+                categoryId: saved.categoryId,
+                condition: saved.condition,
+                stock: saved.stock,
+                imagesCount: Array.isArray(saved.images) ? saved.images.length : 0,
+            });
+
+            saved.moderationScore = result.score;
+            saved.moderationIssues = result.issues.length ? result.issues : null;
+
+            if (autoApproveEnabled && result.passed) {
+                saved.status = ProductStatus.APPROVED;
+                saved.approvedAt = new Date();
+                saved.approvedBy = null;
+                saved.autoApproved = true;
+                saved.adminComment = null;
+                await this.productRepository.save(saved);
+                await this.notificationsService.create(
+                    saved.sellerId,
+                    'product_approved',
+                    'Bài đăng đã được duyệt',
+                    'Bài đăng của bạn đã được hệ thống kiểm tra và được tự động duyệt.',
+                    `/products/${saved.id}`,
+                );
+            } else {
+                saved.autoApproved = false;
+                await this.productRepository.save(saved);
+            }
+        }
+
+        return saved;
     }
 
     async remove(id: number, userId: number) {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, ShoppingCart, User, MapPin, Package, MessageCircle, Eye, X } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, User, MapPin, Package, MessageCircle, Eye, X, ShieldCheck, Truck, Clock } from 'lucide-react';
 import { formatPrice } from '@/lib/formatPrice';
 import { ChatBox } from '@/components/ChatBox';
 
@@ -17,6 +17,7 @@ interface Product {
   condition: string;
   stock: number;
   location: string | null;
+  views?: number;
   seller: {
     id: number;
     fullName: string;
@@ -233,6 +234,18 @@ export default function ProductDetailPage() {
     );
   }
 
+  const conditionLabel = (v: string) => {
+    const c = (v ?? '').toLowerCase();
+    if (c === 'new') return 'Mới';
+    if (c === 'like_new') return 'Như mới';
+    if (c === 'used') return 'Đã qua sử dụng';
+    if (c === 'old') return 'Cũ';
+    if (c === 'damaged') return 'Nát';
+    return v || 'N/A';
+  };
+
+  const createdLabel = product.createdAt ? new Date(product.createdAt).toLocaleString('vi-VN') : '';
+
   const isOwner = product.seller && user?.id === product.seller.id;
 
   return (
@@ -246,10 +259,10 @@ export default function ProductDetailPage() {
           Quay lại
         </button>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-[#5A2475]/10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-6 sm:p-8">
             {/* Image Gallery */}
-            <div>
+            <div className="lg:col-span-7">
               <div className="aspect-square bg-[#5A2475]/8 rounded-xl overflow-hidden mb-4 flex items-center justify-center relative">
                 {isValidMainImage ? (
                   <img
@@ -317,54 +330,55 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Product Info */}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
-              
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-[#5A2475]">
-                  {formatPrice(product.price)} đ
-                </span>
-              </div>
+            <div className="lg:col-span-5">
+              <div className="sticky top-24">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{product.name}</h1>
 
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Package className="w-5 h-5" />
-                  <span>Độ mới: <span className="font-medium">{
-                    product.condition === 'used' ? 'Đã qua sử dụng' :
-                    product.condition === 'new' ? 'Mới' :
-                    product.condition === 'like_new' ? 'Như mới' :
-                    product.condition === 'old' ? 'Cũ' :
-                    product.condition === 'damaged' ? 'Nát' :
-                    product.condition || 'N/A'
-                  }</span></span>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="px-3 py-1 rounded-full bg-[#5A2475]/10 text-[#5A2475] text-sm font-semibold">
+                    {conditionLabel(product.condition)}
+                  </span>
+                  {typeof product.views === 'number' && (
+                    <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-semibold">
+                      {product.views} lượt xem
+                    </span>
+                  )}
+                  {createdLabel && (
+                    <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-semibold inline-flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {createdLabel}
+                    </span>
+                  )}
                 </div>
-                
-                {product.stock !== undefined && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Package className="w-5 h-5" />
-                    <span>Số lượng: <span className="font-medium">{product.stock}</span></span>
-                  </div>
-                )}
-                
-                {product.location && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-5 h-5" />
-                    <span>{product.location}</span>
-                  </div>
-                )}
-                
-                {product.seller && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <User className="w-5 h-5" />
-                    <span>Người bán: <span className="font-medium">{product.seller.fullName}</span></span>
-                  </div>
-                )}
-              </div>
 
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Mô tả</h2>
-                <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
-              </div>
+                <div className="mt-5 rounded-2xl border border-[#5A2475]/10 bg-white shadow-sm p-5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-gray-500 font-semibold">Giá</p>
+                      <p className="text-4xl font-extrabold text-[#5A2475]">{formatPrice(product.price)}₫</p>
+                    </div>
+                    {typeof product.stock === 'number' && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500 font-semibold">Tồn kho</p>
+                        <p className="text-lg font-bold text-gray-900">{product.stock}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Thanh toán nhanh · hạn chế rủi ro
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <MessageCircle className="w-4 h-4 text-[#5A2475]" />
+                      Chat để kiểm tra tình trạng/đầy đủ phụ kiện
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Truck className="w-4 h-4 text-sky-600" />
+                      Hẹn giao dịch linh hoạt theo khu vực
+                    </div>
+                  </div>
 
               {/* Primary CTAs — buy & chat */}
               <div className="flex flex-col sm:flex-row gap-3">
@@ -404,6 +418,29 @@ export default function ProductDetailPage() {
               {product.seller && user && user.id !== product.seller.id && (
                 <p className="text-sm text-gray-500 mt-2">Chat để hỏi giá, tình trạng hoặc thương lượng.</p>
               )}
+
+                  <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
+                    {product.location && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-500" />
+                        <span className="font-medium">{product.location}</span>
+                      </div>
+                    )}
+                    {product.seller && (
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-gray-500" />
+                        <span>
+                          Người bán: <span className="font-semibold">{product.seller.fullName}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Mô tả chi tiết</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{product.description}</p>
+                </div>
               {statsOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#5A2475]/50 p-4" onClick={() => setStatsOpen(false)}>
                   <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
