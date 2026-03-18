@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, ShoppingCart, Store, MessageCircle, ArrowRight } from 'lucide-react';
+import { Search, ShoppingCart, Store, MessageCircle, ArrowRight, Sparkles, SlidersHorizontal, Clock, TrendingUp } from 'lucide-react';
 import { formatPrice } from '@/lib/formatPrice';
 
 interface Product {
@@ -14,6 +14,10 @@ interface Product {
   price: number | string; // Can be string from database decimal
   images: string[] | string | null; // API may return array or legacy string
   location: string | null;
+  condition?: string;
+  stock?: number;
+  views?: number;
+  createdAt?: string;
   seller: {
     id: number;
     fullName: string;
@@ -25,6 +29,8 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [conditionFilter, setConditionFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'popular'>('newest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -106,6 +112,40 @@ export default function Home() {
     fetchProducts(search, selectedCategory, true); // User action, show loading
   };
 
+  const normalizePrice = (value: Product['price']) => {
+    const n = typeof value === 'string' ? Number(value) : value;
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const filteredAndSorted = (() => {
+    const base = Array.isArray(products) ? products : [];
+    const filtered =
+      conditionFilter === 'all'
+        ? base
+        : base.filter((p) => (p.condition ?? '').toLowerCase() === conditionFilter);
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'price_asc') return normalizePrice(a.price) - normalizePrice(b.price);
+      if (sortBy === 'price_desc') return normalizePrice(b.price) - normalizePrice(a.price);
+      if (sortBy === 'popular') return Number(b.views ?? 0) - Number(a.views ?? 0);
+      // newest
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return db - da;
+    });
+    return sorted;
+  })();
+
+  const conditionLabel = (c?: string) => {
+    const v = (c ?? '').toLowerCase();
+    if (v === 'new') return 'Mới';
+    if (v === 'like_new') return 'Như mới';
+    if (v === 'used') return 'Đã qua sử dụng';
+    if (v === 'old') return 'Cũ';
+    if (v === 'damaged') return 'Nát';
+    return '—';
+  };
+
   const handleCategoryClick = async (categorySlug: string) => {
     if (categorySlug === 'all') {
       setSelectedCategory(undefined);
@@ -161,8 +201,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-xs font-semibold mb-2">
+                <Sparkles className="w-4 h-4" />
+                Marketplace cho cộng đồng camera
+              </div>
               <h2 className="text-xl sm:text-2xl font-bold">Mua camera giá tốt · Bán nhanh, an toàn</h2>
-              <p className="text-white/90 text-sm sm:text-base mt-1">Giao dịch trực tiếp với người mua, người bán. Đăng ký miễn phí.</p>
+              <p className="text-white/90 text-sm sm:text-base mt-1">
+                Xem thông tin đầy đủ, chat trực tiếp người bán, thanh toán nhanh.
+              </p>
             </div>
             <div className="flex gap-3">
               <button
@@ -181,12 +227,26 @@ export default function Home() {
               </button>
             </div>
           </div>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-white/90">
+            <div className="flex items-center gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2">
+              <Clock className="w-4 h-4" />
+              Bài đăng mới mỗi ngày
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2">
+              <MessageCircle className="w-4 h-4" />
+              Chat nhanh với người bán
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2">
+              <TrendingUp className="w-4 h-4" />
+              Dễ mua · Dễ bán · Dễ tìm
+            </div>
+          </div>
         </div>
       </section>
 
       <div id="product-list" className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="relative flex gap-3">
+          <div className="relative flex flex-col lg:flex-row gap-3">
             <div className="relative flex-1">
               <input
                 type="text"
@@ -198,13 +258,66 @@ export default function Home() {
               />
               <Search className="absolute left-4 top-3.5 w-5 h-5 text-[#5A2475]/60" />
             </div>
-            <button
-              onClick={handleSearch}
-              disabled={loading}
-              className="px-6 py-3.5 bg-[#963CC3] text-white rounded-xl font-medium shadow-lg shadow-[#963CC3]/25 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Tìm kiếm
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="px-6 py-3.5 bg-[#963CC3] text-white rounded-xl font-semibold shadow-lg shadow-[#963CC3]/25 hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Tìm kiếm
+              </button>
+              <button
+                onClick={() => (user ? router.push('/products/create') : router.push('/auth/register'))}
+                className="px-6 py-3.5 border border-[#5A2475]/25 text-[#5A2475] bg-white/80 rounded-xl font-semibold hover:bg-[#5A2475]/10 transition-colors"
+              >
+                Đăng bán
+              </button>
+            </div>
+          </div>
+
+          {/* Filters row */}
+          <div className="mt-4 bg-white/80 border border-[#5A2475]/10 rounded-2xl p-4 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3 justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                <SlidersHorizontal className="w-4 h-4 text-[#5A2475]" />
+                Bộ lọc nhanh
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { key: 'all', label: 'Tất cả' },
+                  { key: 'new', label: 'Mới' },
+                  { key: 'like_new', label: 'Như mới' },
+                  { key: 'used', label: 'Đã dùng' },
+                  { key: 'old', label: 'Cũ' },
+                  { key: 'damaged', label: 'Nát' },
+                ].map((c) => (
+                  <button
+                    key={c.key}
+                    onClick={() => setConditionFilter(c.key)}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                      conditionFilter === c.key
+                        ? 'bg-[#5A2475] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 font-medium">Sắp xếp:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 focus:ring-2 focus:ring-[#5A2475]/30 focus:border-[#5A2475]/30"
+                >
+                  <option value="newest">Mới nhất</option>
+                  <option value="popular">Phổ biến</option>
+                  <option value="price_asc">Giá tăng dần</option>
+                  <option value="price_desc">Giá giảm dần</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -234,13 +347,13 @@ export default function Home() {
           </div>
         )}
 
-        {!loading && !error && products.length > 0 && (
+        {!loading && !error && filteredAndSorted.length > 0 && (
           <>
             <div className="mb-4 text-sm text-gray-600">
-              Tìm thấy {products.length} sản phẩm
+              Tìm thấy <span className="font-semibold">{filteredAndSorted.length}</span> sản phẩm
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((product) => {
+              {filteredAndSorted.map((product) => {
                 // Handle images - could be array or string (simple-array format)
                 let imageUrl: string | null = null;
                 
@@ -347,6 +460,21 @@ export default function Home() {
                         <span className="text-xl font-bold text-[#5A2475]">
                           {formatPrice(product.price)}₫
                         </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className="px-2 py-1 rounded-full bg-[#5A2475]/10 text-[#5A2475] text-xs font-semibold">
+                          {conditionLabel(product.condition)}
+                        </span>
+                        {typeof product.stock === 'number' && (
+                          <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
+                            Còn {product.stock}
+                          </span>
+                        )}
+                        {typeof product.views === 'number' && product.views > 0 && (
+                          <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                            {product.views} lượt xem
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-col gap-1 text-sm text-gray-500 mb-3">
                         {product.location && (

@@ -61,6 +61,15 @@ export class Product {
     @Column({ name: 'admin_comment', type: 'text', nullable: true })
     adminComment: string | null;
 
+    @Column({ name: 'auto_approved', default: false })
+    autoApproved: boolean;
+
+    @Column({ name: 'moderation_score', type: 'int', default: 0 })
+    moderationScore: number;
+
+    @Column({ name: 'moderation_issues', type: 'jsonb', nullable: true })
+    moderationIssues: { code: string; message: string }[] | null;
+
     @Column({ name: 'approved_at', type: 'timestamp', nullable: true })
     approvedAt: Date | null;
 
