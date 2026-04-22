@@ -12,7 +12,7 @@ interface Product {
   name: string;
   description: string;
   price: number | string;
-  images: string[] | null;
+  images: string[] | string | null;
   status: string;
   adminComment?: string | null;
   condition: string;
@@ -31,6 +31,7 @@ export default function MyProductsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -82,6 +83,17 @@ export default function MyProductsPage() {
     }
   };
 
+  const normalizePrice = (value: Product['price']) => {
+    const n = typeof value === 'string' ? Number(value) : value;
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const sortedProducts = [...products].sort((a, b) => {
+    if (sortBy === 'price_asc') return normalizePrice(a.price) - normalizePrice(b.price);
+    if (sortBy === 'price_desc') return normalizePrice(b.price) - normalizePrice(a.price);
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -96,15 +108,26 @@ export default function MyProductsPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Sản phẩm của tôi</h1>
-          <button
-            onClick={() => router.push('/products/create')}
-            className="flex items-center gap-2 px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Đăng
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_asc' | 'price_desc')}
+              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 focus:ring-2 focus:ring-[#5A2475]/30 focus:border-[#5A2475]/30"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="price_asc">Giá tăng dần</option>
+              <option value="price_desc">Giá giảm dần</option>
+            </select>
+            <button
+              onClick={() => router.push('/products/create')}
+              className="flex items-center gap-2 px-4 py-2 bg-[#963CC3] text-white rounded-xl hover:opacity-90 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Đăng
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -130,7 +153,7 @@ export default function MyProductsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {sortedProducts.map((product) => (
               <div
                 key={product.id}
                 className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
@@ -142,7 +165,7 @@ export default function MyProductsPage() {
                     
                     if (product.images) {
                       if (Array.isArray(product.images)) {
-                        const validImages = product.images.filter(img => 
+                        const validImages = product.images.filter((img: string) => 
                           img && typeof img === 'string' && img.trim().length > 0
                         );
                         if (validImages.length > 0) {
@@ -157,7 +180,10 @@ export default function MyProductsPage() {
                           }
                         } catch (e) {
                           // Not JSON, treat as comma-separated
-                          const images = product.images.split(',').map(img => img.trim()).filter(img => img.length > 0);
+                          const images = product.images
+                            .split(',')
+                            .map((img: string) => img.trim())
+                            .filter((img: string) => img.length > 0);
                           if (images.length > 0) {
                             imageUrl = images[0];
                           }

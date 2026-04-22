@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 import apiClient from '@/lib/api';
 import { X, Send } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/api';
 const WS_BASE = API_URL.replace(/\/api\/?$/, '');
 
 export interface ChatMessage {

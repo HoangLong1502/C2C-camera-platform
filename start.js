@@ -131,15 +131,15 @@ function startServers() {
 
     setTimeout(() => {
       log('\n✅ Servers đang chạy:', 'green');
-      log('   Backend:  http://localhost:3002/api', 'blue');
-      log('   Frontend: http://localhost:3000', 'blue');
+      log('   Backend:  http://localhost:3003/api', 'blue');
+      log('   Frontend: http://localhost:3002', 'blue');
     }, 5000);
   });
 
   setTimeout(() => {
     log('\n✅ Servers đang chạy:', 'green');
-    log('   Backend:  http://localhost:3002/api', 'blue');
-    log('   Frontend: http://localhost:3000', 'blue');
+    log('   Backend:  http://localhost:3003/api', 'blue');
+    log('   Frontend: http://localhost:3002', 'blue');
     log('\n💡 Nhấn Ctrl+C để dừng tất cả servers\n', 'yellow');
   }, 5000);
 
