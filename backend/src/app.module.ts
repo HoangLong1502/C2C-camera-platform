@@ -70,7 +70,7 @@ import { DbWriteThrottlerGuard } from './common/guards/db-write-throttler.guard'
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 5,
+        limit: 10,
       },
     ]),
     AuthModule,
