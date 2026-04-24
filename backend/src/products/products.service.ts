@@ -248,14 +248,21 @@ export class ProductsService {
             }
 
             return productResult;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            const ext = error as {
+                code?: string;
+                detail?: string;
+                constraint?: string;
+                table?: string;
+            };
             console.error('Error creating product:', error);
             console.error('Error details:', {
-                message: error.message,
-                code: error.code,
-                detail: error.detail,
-                constraint: error.constraint,
-                table: error.table,
+                message: err.message,
+                code: ext.code,
+                detail: ext.detail,
+                constraint: ext.constraint,
+                table: ext.table,
             });
             throw error;
         }

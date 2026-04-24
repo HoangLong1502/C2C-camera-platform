@@ -1,4 +1,5 @@
 // Ensure enum types exist in database
+const process = require('node:process');
 const { Client } = require('pg');
 
 const config = {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Search, ShoppingCart, Store, MessageCircle, ArrowRight, Sparkles, SlidersHorizontal, Clock, TrendingUp } from 'lucide-react';
@@ -81,23 +82,37 @@ export default function Home() {
       
       // Always update products (removed comparison to fix display issue)
       setProducts(productsData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Only log detailed errors in development
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to fetch products', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-          url: error.config?.url,
-        });
+        if (axios.isAxiosError(error)) {
+          console.error('Error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+            url: error.config?.url,
+          });
+        }
       }
-      
+
       // Show error on user-initiated actions, not silent refreshes
       if (showLoading) {
-        const errorMessage = error.response?.data?.message 
-          || error.message 
-          || 'Không thể tải sản phẩm. Vui lòng kiểm tra kết nối và thử lại.';
+        const fallback = 'Không thể tải sản phẩm. Vui lòng kiểm tra kết nối và thử lại.';
+        let errorMessage = fallback;
+        if (axios.isAxiosError(error)) {
+          const data = error.response?.data;
+          const fromApi =
+            data &&
+            typeof data === 'object' &&
+            'message' in data &&
+            typeof (data as { message: unknown }).message === 'string'
+              ? (data as { message: string }).message
+              : undefined;
+          errorMessage = fromApi || error.message || fallback;
+        } else if (error instanceof Error) {
+          errorMessage = error.message || fallback;
+        }
         setError(errorMessage);
         setProducts([]);
       }

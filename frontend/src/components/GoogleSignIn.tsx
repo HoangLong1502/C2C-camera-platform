@@ -2,15 +2,33 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, messageFromUnknown } from '@/contexts/AuthContext';
+
+type GoogleIdInitializeConfig = {
+    client_id: string;
+    callback: (response: GoogleCredentialResponse) => void;
+};
+
+type GoogleIdRenderButtonConfig = {
+    type?: string;
+    theme?: string;
+    size?: string;
+    text?: string;
+    width?: number;
+};
+
+interface GoogleCredentialResponse {
+    credential: string;
+    select_by?: string;
+}
 
 declare global {
     interface Window {
         google?: {
             accounts: {
                 id: {
-                    initialize: (config: any) => void;
-                    renderButton: (element: HTMLElement, config: any) => void;
+                    initialize: (config: GoogleIdInitializeConfig) => void;
+                    renderButton: (element: HTMLElement, config: GoogleIdRenderButtonConfig) => void;
                     prompt: () => void;
                 };
             };
@@ -39,14 +57,14 @@ export default function GoogleSignIn({
     const [isInitialized, setIsInitialized] = useState(false);
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
-    const handleCredentialResponse = useCallback(async (response: any) => {
+    const handleCredentialResponse = useCallback(async (response: GoogleCredentialResponse) => {
         try {
             setError(null);
             await loginWithGoogle(response.credential);
             router.push('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Google sign in error:', error);
-            setError(error.response?.data?.message || error.message || 'Đăng nhập bằng Google thất bại');
+            setError(messageFromUnknown(error, 'Đăng nhập bằng Google thất bại'));
         }
     }, [loginWithGoogle, router]);
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 import apiClient from '../lib/api';
 
 interface User {
@@ -12,11 +13,31 @@ interface User {
     walletBalance?: number | string | null;
 }
 
+export interface RegisterPayload {
+    email: string;
+    password: string;
+    fullName: string;
+    phone?: string;
+    role?: string;
+}
+
+export function messageFromUnknown(error: unknown, fallback: string): string {
+    if (axios.isAxiosError(error)) {
+        const data = error.response?.data;
+        if (data && typeof data === 'object' && 'message' in data && typeof (data as { message: unknown }).message === 'string') {
+            return (data as { message: string }).message;
+        }
+        if (error.message) return error.message;
+    }
+    if (error instanceof Error) return error.message;
+    return fallback;
+}
+
 interface AuthContextType {
     user: User | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (data: any) => Promise<void>;
+    register: (data: RegisterPayload) => Promise<void>;
     loginWithGoogle: (token: string) => Promise<void>;
     logout: () => void;
     refreshUser: () => Promise<void>;
@@ -33,9 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Try to get user from API
             const { data } = await apiClient.get('/auth/me');
             setUser(data);
-        } catch (error: any) {
+        } catch (error: unknown) {
             // If API fails, clear storage
-            if (error.response?.status === 401) {
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
             }
@@ -62,21 +83,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('refreshToken', data.refreshToken);
             setUser(data.user);
-        } catch (error: any) {
-            const message = error.response?.data?.message || error.message || 'Login failed';
-            throw new Error(message);
+        } catch (error: unknown) {
+            throw new Error(messageFromUnknown(error, 'Login failed'));
         }
     };
 
-    const register = async (formData: any) => {
+    const register = async (formData: RegisterPayload) => {
         try {
             await apiClient.post('/auth/register', formData);
             // Registration successful - user will need to login
             // After registration, automatically login
             await login(formData.email, formData.password);
-        } catch (error: any) {
-            const message = error.response?.data?.message || error.message || 'Registration failed';
-            throw new Error(message);
+        } catch (error: unknown) {
+            throw new Error(messageFromUnknown(error, 'Registration failed'));
         }
     };
 
@@ -86,9 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('refreshToken', data.refreshToken);
             setUser(data.user);
-        } catch (error: any) {
-            const message = error.response?.data?.message || error.message || 'Google login failed';
-            throw new Error(message);
+        } catch (error: unknown) {
+            throw new Error(messageFromUnknown(error, 'Google login failed'));
         }
     };
 

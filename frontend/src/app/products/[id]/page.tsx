@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import apiClient from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, ShoppingCart, User, MapPin, Package, MessageCircle, Eye, X, ShieldCheck, Truck, Clock } from 'lucide-react';
+import { useAuth, messageFromUnknown } from '@/contexts/AuthContext';
+import { ArrowLeft, ShoppingCart, User, MapPin, MessageCircle, Eye, X, ShieldCheck, Truck, Clock } from 'lucide-react';
 import { formatPrice } from '@/lib/formatPrice';
 import { ChatBox } from '@/components/ChatBox';
 
@@ -24,6 +24,16 @@ interface Product {
     email?: string;
   } | null;
   createdAt: string;
+}
+
+function formatProductCondition(v: string): string {
+  const c = (v ?? '').toLowerCase();
+  if (c === 'new') return 'Mới';
+  if (c === 'like_new') return 'Như mới';
+  if (c === 'used') return 'Đã qua sử dụng';
+  if (c === 'old') return 'Cũ';
+  if (c === 'damaged') return 'Nát';
+  return v || 'N/A';
 }
 
 export default function ProductDetailPage() {
@@ -59,9 +69,9 @@ export default function ProductDetailPage() {
       setError('');
       const response = await apiClient.get(`/products/${params.id}`);
       setProduct(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch product', err);
-      setError(err.response?.data?.message || 'Không thể tải sản phẩm');
+      setError(messageFromUnknown(err, 'Không thể tải sản phẩm'));
     } finally {
       setLoading(false);
     }
@@ -92,9 +102,8 @@ export default function ProductDetailPage() {
       setChatRoomId(data.id);
       setChatOtherUserName(null);
       setChatProductName(product?.name ?? null);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Không mở được chat';
-      alert(msg);
+    } catch (err: unknown) {
+      alert(messageFromUnknown(err, 'Không mở được chat'));
     } finally {
       setChatOpening(false);
     }
@@ -110,9 +119,8 @@ export default function ProductDetailPage() {
         `/products/${product.id}/stats`,
       );
       setStats(data);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Không tải được thống kê';
-      alert(msg);
+    } catch (err: unknown) {
+      alert(messageFromUnknown(err, 'Không tải được thống kê'));
       setStatsOpen(false);
     } finally {
       setStatsLoading(false);
@@ -164,7 +172,7 @@ export default function ProductDetailPage() {
       try {
         const parsed = JSON.parse(product.images);
         if (Array.isArray(parsed)) {
-          imageArray = parsed.filter((img: any) => {
+          imageArray = parsed.filter((img: unknown): img is string => {
             if (!img || typeof img !== 'string' || img.trim().length === 0) {
               return false;
             }
@@ -176,7 +184,7 @@ export default function ProductDetailPage() {
             return true;
           });
         }
-      } catch (e) {
+      } catch {
         // Not JSON, treat as comma-separated (legacy format)
         imageArray = product.images.split(',').map(img => img.trim()).filter(img => {
           if (img.length === 0) return false;
@@ -233,20 +241,6 @@ export default function ProductDetailPage() {
       </div>
     );
   }
-
-  const conditionLabel = (v: string) => {
-    const c = (v ?? '').toLowerCase();
-    if (c === 'new') return 'Mới';
-    if (c === 'like_new') return 'Như mới';
-    if (c === 'used') return 'Đã qua sử dụng';
-    if (c === 'old') return 'Cũ';
-    if (c === 'damaged') return 'Nát';
-    return v || 'N/A';
-  };
-
-  const createdLabel = product.createdAt ? new Date(product.createdAt).toLocaleString('vi-VN') : '';
-
-  const isOwner = product.seller && user?.id === product.seller.id;
 
   return (
     <div className="min-h-screen py-8 pb-24 md:pb-8">
@@ -336,17 +330,17 @@ export default function ProductDetailPage() {
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="px-3 py-1 rounded-full bg-[#5A2475]/10 text-[#5A2475] text-sm font-semibold">
-                    {conditionLabel(product.condition)}
+                    {formatProductCondition(product.condition)}
                   </span>
                   {typeof product.views === 'number' && (
                     <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-semibold">
                       {product.views} lượt xem
                     </span>
                   )}
-                  {createdLabel && (
+                  {product.createdAt && (
                     <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-semibold inline-flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      {createdLabel}
+                      {new Date(product.createdAt).toLocaleString('vi-VN')}
                     </span>
                   )}
                 </div>
@@ -496,9 +490,10 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+        </div>
 
         {/* Sticky CTA bar on mobile — always visible to push buy/chat */}
-        {!isOwner && product.seller && (
+        {!(product.seller && user?.id === product.seller.id) && product.seller && (
           <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 safe-area-pb">
             <div className="max-w-7xl mx-auto flex items-center gap-3">
               <div className="min-w-0">

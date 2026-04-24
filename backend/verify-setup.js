@@ -1,4 +1,5 @@
 // Verify that everything is set up correctly
+const process = require('node:process');
 require('dotenv').config();
 const { Client } = require('pg');
 

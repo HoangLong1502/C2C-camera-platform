@@ -1,4 +1,5 @@
 // Fix products status to approved
+const process = require('node:process');
 const { Client } = require('pg');
 
 const config = {
