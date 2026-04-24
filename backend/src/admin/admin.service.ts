@@ -85,7 +85,14 @@ export class AdminService {
     }));
   }
 
-  async getProductsForModeration(status?: ProductStatus) {
+  async getProductsForModeration(status?: ProductStatus, autoApprovedOnly?: boolean) {
+    if (status === ProductStatus.APPROVED && autoApprovedOnly) {
+      return this.productRepo.find({
+        where: { status: ProductStatus.APPROVED, autoApproved: true },
+        relations: ['seller'],
+        order: { createdAt: 'DESC' },
+      });
+    }
     const where = status != null ? { status } : {};
     return this.productRepo.find({
       where,
@@ -129,21 +136,41 @@ export class AdminService {
       relations: ['seller'],
     });
     if (!product) throw new NotFoundException('Product not found');
-    if (product.status !== ProductStatus.PENDING_APPROVAL) {
-      throw new BadRequestException('Chỉ có thể từ chối bài đang chờ kiểm duyệt.');
+
+    if (product.status === ProductStatus.PENDING_APPROVAL) {
+      product.status = ProductStatus.REJECTED;
+      product.approvedAt = null;
+      product.approvedBy = adminUserId;
+      product.adminComment = trimmed;
+      await this.productRepo.save(product);
+      await this.notificationsService.create(
+        product.sellerId,
+        'product_rejected',
+        'Bài đăng bị từ chối',
+        `Bài đăng của bạn đã bị từ chối. Lý do: ${trimmed}`,
+        `/my-products`,
+      );
+      return product;
     }
-    product.status = ProductStatus.REJECTED;
-    product.approvedAt = null;
-    product.approvedBy = adminUserId;
-    product.adminComment = trimmed;
-    await this.productRepo.save(product);
-    await this.notificationsService.create(
-      product.sellerId,
-      'product_rejected',
-      'Bài đăng bị từ chối',
-      `Bài đăng của bạn đã bị từ chối. Lý do: ${trimmed}`,
-      `/my-products`,
-    );
-    return product;
+
+    // Thu hồi bài đã được AI tự duyệt & đăng — chỉ khi vẫn đánh dấu autoApproved
+    if (product.status === ProductStatus.APPROVED && product.autoApproved) {
+      product.status = ProductStatus.REJECTED;
+      product.approvedAt = null;
+      product.approvedBy = adminUserId;
+      product.adminComment = `[Thu hồi sau AI tự duyệt] ${trimmed}`;
+      product.autoApproved = false;
+      await this.productRepo.save(product);
+      await this.notificationsService.create(
+        product.sellerId,
+        'product_rejected',
+        'Bài đăng bị gỡ sau kiểm tra',
+        `Bài đăng của bạn đã bị gỡ khỏi sàn. Lý do: ${trimmed}`,
+        `/my-products`,
+      );
+      return product;
+    }
+
+    throw new BadRequestException('Chỉ có thể từ chối bài đang chờ duyệt, hoặc gỡ bài do AI tự đăng (auto duyệt).');
   }
 }

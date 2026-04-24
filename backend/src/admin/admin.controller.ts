@@ -23,9 +23,13 @@ export class AdminController {
   }
 
   @Get('products/moderation')
-  getProductsForModeration(@Query('status') status?: string) {
+  getProductsForModeration(
+    @Query('status') status?: string,
+    @Query('autoApprovedOnly') autoApprovedOnly?: string,
+  ) {
     const statusEnum = status ? (status as ProductStatus) : undefined;
-    return this.adminService.getProductsForModeration(statusEnum);
+    const autoOnly = autoApprovedOnly === 'true' || autoApprovedOnly === '1';
+    return this.adminService.getProductsForModeration(statusEnum, autoOnly);
   }
 
   @Patch('products/:id/approve')
