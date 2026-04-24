@@ -1,4 +1,3 @@
-import React from 'react'
 import { User, ShoppingCart, Store, Settings, LogOut as LogoutIcon, Shield } from 'lucide-react'
 import type { User as UserType } from '../types'
 

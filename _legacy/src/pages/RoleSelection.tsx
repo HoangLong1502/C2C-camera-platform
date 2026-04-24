@@ -1,4 +1,3 @@
-import React from 'react'
 import { User, ShoppingBag, Store, CheckCircle } from 'lucide-react'
 
 interface RoleSelectionProps {

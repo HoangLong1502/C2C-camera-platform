@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import process from "node:process";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -9,7 +10,7 @@ const nextConfig: NextConfig = {
     pagesBufferLength: 2,
   },
   // Proxy API requests to backend
-  async rewrites() {
+  rewrites() {
     return [
       {
         source: '/api/:path*',

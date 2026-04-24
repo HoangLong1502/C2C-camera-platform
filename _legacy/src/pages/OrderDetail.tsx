@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
-import { ShoppingBag, Truck, CheckCircle, Package, Star } from 'lucide-react'
+import { useState } from 'react'
+import { ShoppingBag, Truck, CheckCircle, Package } from 'lucide-react'
+import type { Order } from '../types'
 
 interface OrderDetailProps {
-  order: any;
+  order: Order;
   onBack: () => void;
 }
 

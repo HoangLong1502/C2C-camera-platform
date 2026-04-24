@@ -1,7 +1,8 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Req, Request } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, RefreshTokenDto, GoogleAuthDto, UpdateProfileDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { getJwtUserId, type JwtAuthedRequest } from './types/jwt-user';
 
 @Controller('auth')
 export class AuthController {
@@ -18,14 +19,14 @@ export class AuthController {
     }
 
     @Post('refresh')
-    async refreshTokens(@Body() dto: RefreshTokenDto) {
+    refreshTokens(@Body() dto: RefreshTokenDto) {
         return this.authService.refreshTokens(dto.refreshToken);
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('logout')
-    logout(@Req() req: Request & { user: any }) {
-        const userId = req.user.userId || req.user.sub;
+    logout(@Req() req: JwtAuthedRequest) {
+        const userId = getJwtUserId(req.user);
         return this.authService.logout(userId);
     }
 
@@ -38,13 +39,13 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Patch('profile')
-    updateProfile(@Req() req: Request & { user: any }, @Body() dto: UpdateProfileDto) {
-        const userId = req.user.userId || req.user.sub;
+    updateProfile(@Req() req: JwtAuthedRequest, @Body() dto: UpdateProfileDto) {
+        const userId = getJwtUserId(req.user);
         return this.authService.updateProfile(userId, dto);
     }
 
     @Post('google')
-    async googleAuth(@Body() dto: GoogleAuthDto) {
+    googleAuth(@Body() dto: GoogleAuthDto) {
         return this.authService.googleAuth(dto);
     }
 }

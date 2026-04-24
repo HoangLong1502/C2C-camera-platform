@@ -61,8 +61,9 @@ export class AiPricingService {
             'X-Title': title,
           },
         });
-      } catch (e: any) {
-        this.logger.warn(`OpenRouter pricing failed, using heuristic: ${e?.message ?? e}`);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        this.logger.warn(`OpenRouter pricing failed, using heuristic: ${msg}`);
       }
     }
 
@@ -76,8 +77,9 @@ export class AiPricingService {
           source: 'openai',
           extraHeaders: {},
         });
-      } catch (e: any) {
-        this.logger.warn(`OpenAI pricing failed, using heuristic: ${e?.message ?? e}`);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        this.logger.warn(`OpenAI pricing failed, using heuristic: ${msg}`);
       }
     }
 

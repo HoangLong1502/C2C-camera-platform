@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Package, CheckCircle, XCircle, Eye, AlertCircle } from 'lucide-react'
+import { useState } from 'react'
+import { CheckCircle, XCircle, Eye, AlertCircle } from 'lucide-react'
 
 interface AdminProductApprovalProps {
   onBack: () => void;

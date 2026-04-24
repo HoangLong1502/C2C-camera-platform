@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Camera, Eye, EyeOff, Shield } from 'lucide-react'
 import type { User, Page } from '../types'
 
 interface LoginProps {
-  onLogin: (user: any) => void;
+  onLogin: (user: User) => void;
   setCurrentPage: (page: Page) => void;
   onShowRegister?: () => void;
 }
@@ -14,7 +14,7 @@ function Login({ onLogin, setCurrentPage, onShowRegister }: LoginProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     try {
       // Mock Google OAuth flow
       alert('🔐 Đăng nhập bằng Google sẽ được tích hợp sau!\n\nHiện tại bạn có thể:\n- Đăng ký với email\n- Đăng nhập với tài khoản đã có\n\nVí dụ:\nEmail: admin@admin.com\nPassword: 123')
@@ -24,7 +24,7 @@ function Login({ onLogin, setCurrentPage, onShowRegister }: LoginProps) {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 

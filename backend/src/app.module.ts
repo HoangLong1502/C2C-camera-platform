@@ -63,8 +63,8 @@ import { DbWriteThrottlerGuard } from './common/guards/db-write-throttler.guard'
           Dispute,
           Subscription,
         ],
-        synchronize: process.env.NODE_ENV !== 'production', // Auto-sync in development only
-        logging: process.env.NODE_ENV === 'development',
+        synchronize: config.get<string>('NODE_ENV') !== 'production', // Auto-sync in development only
+        logging: config.get<string>('NODE_ENV') === 'development',
       }),
     }),
     ThrottlerModule.forRoot([

@@ -35,7 +35,7 @@ export class Subscription {
     price: number;
 
     @Column({ type: 'jsonb', nullable: true })
-    features: Record<string, any>;
+    features: Record<string, unknown>;
 
     @Column({
         type: 'enum',
