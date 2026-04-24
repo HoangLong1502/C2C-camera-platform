@@ -1,3 +1,4 @@
+import process from 'node:process';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, HttpException, HttpStatus } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -51,7 +52,8 @@ async function bootstrap() {
     const authService = app.get(AuthService);
     await authService.ensureAdminExists();
   } catch (error) {
-    console.error('⚠️  Warning: Could not create admin account:', error.message);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('⚠️  Warning: Could not create admin account:', msg);
     console.log('   You can create admin manually or restart after database is ready');
   }
 }

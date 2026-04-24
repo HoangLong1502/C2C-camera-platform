@@ -7,11 +7,13 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
+import { Server, type Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service';
+
+/** Socket after JWT handshake in `handleConnection` */
+type ChatSocket = Socket & { userId?: number };
 
 @WebSocketGateway({
   cors: { origin: ['http://localhost:3000', 'http://localhost:3002'] },
@@ -52,7 +54,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(client: any) {
+  handleDisconnect(client: ChatSocket) {
     if (client.userId) {
       const set = this.userSockets.get(client.userId);
       if (set) {
@@ -65,7 +67,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('join_room')
   handleJoinRoom(
     @MessageBody() data: { roomId: number },
-    @ConnectedSocket() client: any,
+    @ConnectedSocket() client: ChatSocket,
   ) {
     if (!client.userId) return;
     client.join(`room_${data.roomId}`);
@@ -74,7 +76,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('send_message')
   async handleSendMessage(
     @MessageBody() data: { roomId: number; message: string },
-    @ConnectedSocket() client: any,
+    @ConnectedSocket() client: ChatSocket,
   ) {
     if (!client.userId || !data.roomId || !data.message?.trim()) return;
     try {
@@ -95,8 +97,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       };
       this.server.to(`room_${data.roomId}`).emit('new_message', payload);
       return payload;
-    } catch (e) {
-      return { error: e.message };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to send message';
+      return { error: msg };
     }
   }
 }

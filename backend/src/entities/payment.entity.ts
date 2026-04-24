@@ -44,7 +44,7 @@ export class Payment {
     paymentStatus!: PaymentStatus;
 
     @Column({ type: 'jsonb', nullable: true })
-    metadata!: Record<string, any> | null;
+    metadata!: Record<string, unknown> | null;
 
     @ManyToOne(() => Order, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'order_id' })

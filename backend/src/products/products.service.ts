@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -24,7 +25,12 @@ export class ProductsService {
         private notificationsService: NotificationsService,
         private autoModerationService: AutoModerationService,
         private aiPricingService: AiPricingService,
+        private readonly config: ConfigService,
     ) { }
+
+    private envFlag(key: string, defaultValue: string): boolean {
+        return (this.config.get<string>(key) ?? defaultValue).toLowerCase() === 'true';
+    }
 
     async create(userId: number, dto: CreateProductDto) {
         try {
@@ -181,7 +187,7 @@ export class ProductsService {
                 imagesLength: typeof imagesForLog === 'string' ? imagesForLog.length : Array.isArray(imagesForLog) ? imagesForLog.length : 'N/A'
             });
             // Auto-moderation (AI free) -> may auto-approve/publish
-            const autoApproveEnabled = (process.env.AUTO_APPROVE_ENABLED ?? 'true').toLowerCase() === 'true';
+            const autoApproveEnabled = this.envFlag('AUTO_APPROVE_ENABLED', 'true');
             const result = this.autoModerationService.evaluate({
                 name: productResult.name,
                 description: productResult.description,
@@ -220,8 +226,7 @@ export class ProductsService {
 
             // Mặc định: vừa pass moderation rule vừa AI thấy giá hợp lý.
             // Đặt AUTO_PUBLISH_STRICT_MODERATION=false → chỉ cần AI định giá hợp lý (+ AUTO_APPROVE_ENABLED) là tự publish.
-            const strictModeration =
-                (process.env.AUTO_PUBLISH_STRICT_MODERATION ?? 'true').toLowerCase() === 'true';
+            const strictModeration = this.envFlag('AUTO_PUBLISH_STRICT_MODERATION', 'true');
             const canAutoPublish =
                 autoApproveEnabled &&
                 pricing.reasonable &&
@@ -469,7 +474,7 @@ export class ProductsService {
 
         // If product is pending (new or re-submitted), attempt auto-approve again
         if (saved.status === ProductStatus.PENDING_APPROVAL) {
-            const autoApproveEnabled = (process.env.AUTO_APPROVE_ENABLED ?? 'true').toLowerCase() === 'true';
+            const autoApproveEnabled = this.envFlag('AUTO_APPROVE_ENABLED', 'true');
             const result = this.autoModerationService.evaluate({
                 name: saved.name,
                 description: saved.description,

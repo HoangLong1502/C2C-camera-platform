@@ -118,13 +118,13 @@ function startServers() {
     log('💡 Đang thử cách khác...', 'yellow');
     
     // Fallback: chạy riêng biệt với đúng cwd
-    const backend = spawn('npm', ['run', 'start:dev'], {
+    const _backend = spawn('npm', ['run', 'start:dev'], {
       cwd: path.join(__dirname, 'backend'),
       stdio: 'inherit',
       shell: true,
     });
 
-    const frontend = spawn('npm', ['run', 'dev'], {
+    const _frontend = spawn('npm', ['run', 'dev'], {
       cwd: path.join(__dirname, 'frontend'),
       stdio: 'inherit',
       shell: true,

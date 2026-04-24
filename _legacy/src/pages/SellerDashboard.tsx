@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { Plus, Package, Edit2, Trash2, Eye, TrendingUp, DollarSign, ShoppingBag } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Package, Edit2, Trash2, Eye, DollarSign, ShoppingBag } from 'lucide-react'
+import type { User } from '../types'
 
 interface SellerDashboardProps {
-  user: any;
+  user: User;
   onLogout: () => void;
 }
 
@@ -21,7 +22,7 @@ interface SellerProduct {
   condition?: string;
 }
 
-function SellerDashboard({ user, onLogout }: SellerDashboardProps) {
+function SellerDashboard({ user, onLogout: _onLogout }: SellerDashboardProps) {
   const [products, setProducts] = useState<SellerProduct[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [formData, setFormData] = useState({

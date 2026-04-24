@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { LogOut, ShoppingBag, CheckCircle, Truck, Package, XCircle, Eye, Trash2, FileCheck } from 'lucide-react'
 import AdminProductApproval from './AdminProductApproval'
 import type { Page } from '../types'
@@ -22,7 +22,7 @@ interface Order {
 
 function AdminDashboard({ onLogout, setCurrentPage }: AdminDashboardProps) {
   const [orders, setOrders] = useState<Order[]>([])
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [, setSelectedOrder] = useState<Order | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders')
 

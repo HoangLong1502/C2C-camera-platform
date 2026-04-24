@@ -71,7 +71,7 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // Get all categories
-app.get('/api/categories', async (req, res) => {
+app.get('/api/categories', async (_req, res) => {
   try {
     const categories = await queries.getAllCategories();
     res.json(categories);
@@ -93,7 +93,7 @@ app.post('/api/orders', async (req, res) => {
 });
 
 // Get all orders
-app.get('/api/orders', async (req, res) => {
+app.get('/api/orders', async (_req, res) => {
   try {
     const orders = await queries.getAllOrders();
     res.json(orders);
@@ -161,7 +161,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Protected routes middleware
-const authenticateToken = (req, res, next) => {
+const _authenticateToken = (req, res, next) => {
   const token = req.headers['authorization'];
   
   if (!token) {
@@ -173,7 +173,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 

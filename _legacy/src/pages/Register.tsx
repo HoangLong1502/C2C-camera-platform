@@ -1,15 +1,15 @@
-import React, { useState } from 'react'
-import { Camera, Eye, EyeOff, User, Mail, Phone, Lock } from 'lucide-react'
-import type { Page } from '../types'
+import { useState, type FormEvent } from 'react'
+import { Eye, EyeOff, User, Mail } from 'lucide-react'
+import type { Page, User } from '../types'
 
 interface RegisterProps {
-  onRegister: (user: any) => void;
+  onRegister: (user: User) => void;
   setCurrentPage: (page: Page) => void;
   onBack: () => void;
   onGoogleLogin?: () => void;
 }
 
-function Register({ onRegister, setCurrentPage, onBack, onGoogleLogin }: RegisterProps) {
+function Register({ onRegister: _onRegister, setCurrentPage: _setCurrentPage, onBack, onGoogleLogin: _onGoogleLogin }: RegisterProps) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -64,7 +64,7 @@ function Register({ onRegister, setCurrentPage, onBack, onGoogleLogin }: Registe
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 

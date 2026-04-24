@@ -1,21 +1,19 @@
-import React from 'react'
 import { LogIn } from 'lucide-react'
+import type { User } from '../types'
 
 interface LoginWithGoogleProps {
-  onSuccess: (user: any) => void;
+  onSuccess: (user: User) => void;
 }
 
 function LoginWithGoogle({ onSuccess }: LoginWithGoogleProps) {
   const handleGoogleLogin = () => {
     // Simulate Google login for now
     // In production, you would integrate with Google OAuth 2.0
-    const mockGoogleUser = {
+    const mockGoogleUser: User = {
       email: 'user@gmail.com',
-      name: 'Google User',
-      picture: 'https://via.placeholder.com/150',
-      role: 'buyer' // Default role for Google users
-    }
-    
+      role: 'buyer',
+    };
+
     alert('Đăng nhập bằng Google thành công!')
     onSuccess(mockGoogleUser)
   }

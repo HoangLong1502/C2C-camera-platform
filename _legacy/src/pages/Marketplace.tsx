@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Search, ShoppingCart, Star, MapPin, Package, Heart, Filter } from 'lucide-react'
+import { useState } from 'react'
+import { Search, ShoppingCart, Star, MapPin, Package, Heart } from 'lucide-react'
 import type { Product } from '../types'
 
 interface MarketplaceProps {

@@ -38,7 +38,7 @@ export class WalletTopup {
   providerResponseCode!: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  metadata!: Record<string, any> | null;
+  metadata!: Record<string, unknown> | null;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })

@@ -62,7 +62,7 @@ async function migrateImages() {
               // If not an array, treat as comma-separated
               imagesArray = product.images.split(',').map(img => img.trim()).filter(img => img.length > 0);
             }
-          } catch (e) {
+          } catch (_e) {
             // Not JSON, treat as comma-separated
             imagesArray = product.images.split(',').map(img => img.trim()).filter(img => img.length > 0);
           }
@@ -110,7 +110,7 @@ async function migrateImages() {
             // If not an array, treat as comma-separated
             imagesArray = product.images.split(',').map(img => img.trim()).filter(img => img.length > 0);
           }
-        } catch (e) {
+        } catch (_e) {
           // Not JSON, treat as comma-separated (simple-array format)
           imagesArray = product.images.split(',').map(img => img.trim()).filter(img => img.length > 0);
         }
