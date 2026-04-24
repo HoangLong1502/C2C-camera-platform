@@ -1,4 +1,5 @@
 // Quick test to verify backend can start
+const process = require('node:process');
 const http = require('http');
 
 console.log('🧪 Testing backend connection...\n');

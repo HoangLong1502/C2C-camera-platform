@@ -3,6 +3,7 @@
  * Adds new values: like_new, old, damaged
  */
 
+const process = require('node:process');
 const { Client } = require('pg');
 require('dotenv').config();
 

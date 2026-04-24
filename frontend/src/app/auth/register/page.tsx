@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, messageFromUnknown } from '@/contexts/AuthContext';
 import { UserPlus } from 'lucide-react';
 import GoogleSignIn from '@/components/GoogleSignIn';
 
@@ -34,8 +34,8 @@ export default function RegisterPage() {
         try {
             await register(formData);
             router.push('/');
-        } catch (err: any) {
-            setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+        } catch (err: unknown) {
+            setError(messageFromUnknown(err, 'Registration failed. Please try again.'));
         } finally {
             setLoading(false);
         }

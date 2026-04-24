@@ -14,8 +14,8 @@ function formatVnpDate(d: Date) {
   return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
 }
 
-function sortObject(obj: Record<string, any>) {
-  const sorted: Record<string, any> = {};
+function sortObject(obj: Record<string, unknown>) {
+  const sorted: Record<string, unknown> = {};
   Object.keys(obj)
     .sort()
     .forEach((key) => {
@@ -24,7 +24,7 @@ function sortObject(obj: Record<string, any>) {
   return sorted;
 }
 
-function buildQueryString(params: Record<string, any>) {
+function buildQueryString(params: Record<string, unknown>) {
   return Object.keys(params)
     .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(String(params[key]))}`)
     .join('&');
@@ -75,7 +75,7 @@ export class WalletService {
     const now = new Date();
     const expire = new Date(now.getTime() + 15 * 60 * 1000);
 
-    const vnpParams: Record<string, any> = {
+    const vnpParams: Record<string, string | number> = {
       vnp_Version: '2.1.0',
       vnp_Command: 'pay',
       vnp_TmnCode: vnpTmnCode,
@@ -99,7 +99,7 @@ export class WalletService {
     return { paymentUrl, txnRef };
   }
 
-  verifyVnpayReturn(query: Record<string, any>) {
+  verifyVnpayReturn(query: Record<string, string | string[] | undefined>) {
     const vnpHashSecret = this.config.get<string>('VNP_HASH_SECRET');
     if (!vnpHashSecret) throw new BadRequestException('VNPay chưa được cấu hình (VNP_HASH_SECRET)');
 
@@ -115,7 +115,13 @@ export class WalletService {
     return { isValid: secureHash && checkHash === secureHash, computed: checkHash };
   }
 
-  async handleVnpayResult(query: Record<string, any>, source: 'return' | 'ipn') {
+  async handleVnpayResult(
+    query: Record<string, string | string[] | undefined>,
+    source: 'return' | 'ipn',
+  ): Promise<
+    | { ok: true; topup: WalletTopup; credited: boolean }
+    | { ok: false; message: string; topup?: WalletTopup; credited?: boolean }
+  > {
     const { isValid } = this.verifyVnpayReturn(query);
     if (!isValid) {
       return { ok: false, message: 'Sai chữ ký' };

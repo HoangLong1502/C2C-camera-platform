@@ -3,6 +3,7 @@
  * Run this script after changing the entity from simple-array to jsonb
  */
 
+const process = require('node:process');
 const { Client } = require('pg');
 require('dotenv').config();
 

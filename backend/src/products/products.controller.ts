@@ -9,7 +9,6 @@ import {
     Query,
     UseGuards,
     Req,
-    Request,
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
@@ -22,6 +21,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../entities/user.entity';
 import { ProductStatus } from '../entities/product.entity';
 import { ChatService } from '../chat/chat.service';
+import { getJwtUserId, type JwtAuthedRequest, type JwtOptionalRequest } from '../auth/types/jwt-user';
 
 @Controller('products')
 export class ProductsController {
@@ -41,18 +41,18 @@ export class ProductsController {
 
     @UseGuards(JwtAuthGuard)
     @Get('seller/my-products')
-    myProducts(@Req() req: Request & { user: any }) {
-        const userId = req.user.userId || req.user.sub;
+    myProducts(@Req() req: JwtAuthedRequest) {
+        const userId = getJwtUserId(req.user);
         return this.productsService.findByUser(userId);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get(':id/stats')
-    async getProductStats(@Param('id') id: string, @Req() req: Request & { user: any }) {
-        const userId = req.user.userId ?? req.user.sub;
+    async getProductStats(@Param('id') id: string, @Req() req: JwtAuthedRequest) {
+        const userId = getJwtUserId(req.user);
         const productId = +id;
         const product = await this.productsService.findOne(productId);
-        if (!product || (product as any).sellerId !== userId) {
+        if (!product || product.sellerId !== userId) {
             throw new HttpException('Chỉ chủ sản phẩm mới xem được thống kê', HttpStatus.FORBIDDEN);
         }
         const viewCount = await this.productsService.getViewCount(productId);
@@ -62,7 +62,7 @@ export class ProductsController {
 
     @UseGuards(OptionalJwtAuthGuard)
     @Post(':id/view')
-    async recordView(@Param('id') id: string, @Req() req: Request & { user?: any }) {
+    async recordView(@Param('id') id: string, @Req() req: JwtOptionalRequest) {
         const productId = +id;
         const userId = req.user?.userId ?? req.user?.sub ?? null;
         await this.productsService.recordView(productId, userId);
@@ -71,7 +71,7 @@ export class ProductsController {
 
     @UseGuards(OptionalJwtAuthGuard)
     @Get(':id')
-    findOne(@Param('id') id: string, @Req() req: Request & { user?: any }) {
+    findOne(@Param('id') id: string, @Req() req: JwtOptionalRequest) {
         const user = req.user;
         const viewer = user
             ? { userId: user.userId ?? user.sub, isAdmin: user.role === UserRole.ADMIN }
@@ -81,43 +81,55 @@ export class ProductsController {
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    async create(@Req() req: Request & { user: any }, @Body() dto: CreateProductDto) {
+    async create(@Req() req: JwtAuthedRequest, @Body() dto: CreateProductDto) {
         try {
-            const userId = req.user.userId || req.user.sub;
+            const userId = getJwtUserId(req.user);
             console.log('Create product request:', { userId, user: req.user, dto });
             const product = await this.productsService.create(userId, dto);
             return product;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error in create product controller:', error);
-            console.error('Error stack:', error.stack);
+            const err = error instanceof Error ? error : new Error(String(error));
+            const ext = error as {
+                code?: string;
+                detail?: string;
+                constraint?: string;
+                table?: string;
+                status?: number;
+            };
+            console.error('Error stack:', err.stack);
             console.error('Error details:', {
-                message: error.message,
-                code: error.code,
-                detail: error.detail,
-                constraint: error.constraint,
-                table: error.table,
+                message: err.message,
+                code: ext.code,
+                detail: ext.detail,
+                constraint: ext.constraint,
+                table: ext.table,
             });
-            
+
+            if (error instanceof HttpException) {
+                throw error;
+            }
+
             // Return more detailed error message
-            const errorMessage = error.detail || error.message || 'Failed to create product';
+            const errorMessage = ext.detail || err.message || 'Failed to create product';
             throw new HttpException(
-                { message: errorMessage, error: error.code || 'INTERNAL_ERROR' },
-                error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+                { message: errorMessage, error: ext.code || 'INTERNAL_ERROR' },
+                ext.status || HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
-    update(@Param('id') id: string, @Req() req: Request & { user: any }, @Body() dto: UpdateProductDto) {
-        const userId = req.user.userId || req.user.sub;
+    update(@Param('id') id: string, @Req() req: JwtAuthedRequest, @Body() dto: UpdateProductDto) {
+        const userId = getJwtUserId(req.user);
         return this.productsService.update(+id, userId, dto);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    remove(@Param('id') id: string, @Req() req: Request & { user: any }) {
-        const userId = req.user.userId || req.user.sub;
+    remove(@Param('id') id: string, @Req() req: JwtAuthedRequest) {
+        const userId = getJwtUserId(req.user);
         return this.productsService.remove(+id, userId);
     }
 
