@@ -18,13 +18,18 @@ import {
   LayoutDashboard,
   ShieldCheck,
   Zap,
+  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 
 const MODERATION_STATUS = {
   pending_approval: 'Chờ duyệt',
   approved: 'Đã duyệt',
   rejected: 'Từ chối',
+  ai_auto: 'AI tự đăng',
 } as const;
+
+type ModerationFilterKey = keyof typeof MODERATION_STATUS;
 
 interface DashboardStats {
   totalProducts: number;
@@ -35,6 +40,11 @@ interface DashboardStats {
   totalChatRooms: number;
 }
 
+interface ModerationIssue {
+  code: string;
+  message: string;
+}
+
 interface ModerationProduct {
   id: number;
   name: string;
@@ -43,8 +53,18 @@ interface ModerationProduct {
   adminFee?: number | null;
   status: string;
   adminComment?: string | null;
-  seller?: { id: number; name?: string; email?: string };
+  autoApproved?: boolean;
+  moderationScore?: number;
+  moderationIssues?: ModerationIssue[] | null;
+  seller?: { id: number; fullName?: string; email?: string };
   createdAt: string;
+}
+
+function parseAiRow(issues: ModerationIssue[] | null | undefined) {
+  const list = Array.isArray(issues) ? issues : [];
+  const aiPricing = list.find((i) => i.code === 'ai_pricing');
+  const priceRejected = list.some((i) => i.code === 'price_unreasonable');
+  return { aiPricing: aiPricing?.message ?? null, priceRejected };
 }
 
 export default function AdminDashboardPage() {
@@ -55,8 +75,12 @@ export default function AdminDashboardPage() {
   const [statsError, setStatsError] = useState('');
   const [moderationProducts, setModerationProducts] = useState<ModerationProduct[]>([]);
   const [moderationLoading, setModerationLoading] = useState(false);
-  const [moderationFilter, setModerationFilter] = useState<string>('pending_approval');
-  const [rejectModal, setRejectModal] = useState<{ productId: number; productName: string } | null>(null);
+  const [moderationFilter, setModerationFilter] = useState<ModerationFilterKey>('pending_approval');
+  const [rejectModal, setRejectModal] = useState<{
+    productId: number;
+    productName: string;
+    isRevoke?: boolean;
+  } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [feeInputs, setFeeInputs] = useState<Record<number, string>>({});
@@ -78,12 +102,17 @@ export default function AdminDashboardPage() {
       .finally(() => setStatsLoading(false));
   }, [user]);
 
+  const moderationListParams = () =>
+    moderationFilter === 'ai_auto'
+      ? { status: 'approved' as const, autoApprovedOnly: 'true' }
+      : { status: moderationFilter };
+
   useEffect(() => {
     if (!user || user.role !== 'admin') return;
     setModerationLoading(true);
     apiClient
       .get<ModerationProduct[]>('/admin/products/moderation', {
-        params: moderationFilter ? { status: moderationFilter } : {},
+        params: moderationListParams(),
       })
       .then((res) => setModerationProducts(Array.isArray(res.data) ? res.data : []))
       .catch(() => setModerationProducts([]))
@@ -95,7 +124,7 @@ export default function AdminDashboardPage() {
     setModerationLoading(true);
     apiClient
       .get<ModerationProduct[]>('/admin/products/moderation', {
-        params: moderationFilter ? { status: moderationFilter } : {},
+        params: moderationListParams(),
       })
       .then((res) => setModerationProducts(Array.isArray(res.data) ? res.data : []))
       .finally(() => setModerationLoading(false));
@@ -127,6 +156,7 @@ export default function AdminDashboardPage() {
       alert('Vui lòng nhập lý do từ chối.');
       return;
     }
+    const wasRevoke = rejectModal.isRevoke === true;
     setActionLoading(true);
     try {
       await apiClient.patch(`/admin/products/${rejectModal.productId}/reject`, {
@@ -135,7 +165,17 @@ export default function AdminDashboardPage() {
       setRejectModal(null);
       setRejectReason('');
       refreshModeration();
-      if (stats) setStats({ ...stats, pendingApproval: Math.max(0, stats.pendingApproval - 1) });
+      if (stats) {
+        if (wasRevoke) {
+          setStats({
+            ...stats,
+            productsOnSale: Math.max(0, stats.productsOnSale - 1),
+            totalProducts: Math.max(0, stats.totalProducts),
+          });
+        } else {
+          setStats({ ...stats, pendingApproval: Math.max(0, stats.pendingApproval - 1) });
+        }
+      }
     } catch (e: any) {
       alert(e.response?.data?.message || 'Không thể từ chối bài');
     } finally {
@@ -245,8 +285,8 @@ export default function AdminDashboardPage() {
                   <ShieldCheck className="w-4 h-4 text-slate-600" />
                   Kiểm duyệt bài đăng
                 </h2>
-                <div className="flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-                  {(['pending_approval', 'approved', 'rejected'] as const).map((key) => (
+                <div className="flex flex-wrap rounded-lg border border-slate-200 p-0.5 bg-slate-50 gap-0.5">
+                  {(['pending_approval', 'ai_auto', 'approved', 'rejected'] as const).map((key) => (
                     <button
                       key={key}
                       onClick={() => setModerationFilter(key)}
@@ -277,17 +317,26 @@ export default function AdminDashboardPage() {
                         <th className="px-4 py-2.5 font-semibold text-slate-700">Bài đăng</th>
                         <th className="px-4 py-2.5 font-semibold text-slate-700">Người đăng</th>
                         <th className="px-4 py-2.5 font-semibold text-slate-700">Giá / Phí</th>
+                        <th className="px-4 py-2.5 font-semibold text-slate-700 min-w-[200px]">
+                          <span className="inline-flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+                            AI định giá
+                          </span>
+                        </th>
                         <th className="px-4 py-2.5 font-semibold text-slate-700">Trạng thái</th>
-                        {moderationFilter === 'pending_approval' && (
-                          <th className="px-4 py-2.5 font-semibold text-slate-700 text-right">Thao tác</th>
-                        )}
-                        {moderationFilter === 'rejected' && (
-                          <th className="px-4 py-2.5 font-semibold text-slate-700">Lý do</th>
+                        {moderationFilter === 'rejected' ? (
+                          <th className="px-4 py-2.5 font-semibold text-slate-700 min-w-[180px]">Lý do</th>
+                        ) : (
+                          <th className="px-4 py-2.5 font-semibold text-slate-700 text-right min-w-[200px]">Thao tác</th>
                         )}
                       </tr>
                     </thead>
                     <tbody>
-                      {moderationProducts.map((p, idx) => (
+                      {moderationProducts.map((p, idx) => {
+                        const { aiPricing, priceRejected } = parseAiRow(p.moderationIssues);
+                        const canRevokeAuto =
+                          p.status === 'approved' && p.autoApproved === true;
+                        return (
                         <tr
                           key={p.id}
                           className={`border-b border-slate-100 ${idx % 2 === 1 ? 'bg-slate-50/50' : ''}`}
@@ -297,7 +346,7 @@ export default function AdminDashboardPage() {
                             <div className="text-slate-500 line-clamp-1 text-xs mt-0.5">{p.description}</div>
                           </td>
                           <td className="px-4 py-3 text-slate-600">
-                            {p.seller?.name || p.seller?.email || '—'}
+                            {p.seller?.fullName || p.seller?.email || '—'}
                           </td>
                           <td className="px-4 py-3">
                             <div className="tabular-nums font-medium text-slate-900">
@@ -329,48 +378,144 @@ export default function AdminDashboardPage() {
                               </div>
                             )}
                           </td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                p.status === 'approved'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : p.status === 'rejected'
-                                    ? 'bg-red-100 text-red-800'
-                                    : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {MODERATION_STATUS[p.status as keyof typeof MODERATION_STATUS] ?? p.status}
-                            </span>
+                          <td className="px-4 py-3 align-top">
+                            {moderationFilter === 'pending_approval' && (
+                              <div className="flex flex-col gap-1">
+                                <span
+                                  className={`inline-flex w-fit items-center px-2 py-0.5 rounded text-xs font-semibold ${
+                                    priceRejected
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-emerald-100 text-emerald-800'
+                                  }`}
+                                >
+                                  {priceRejected ? 'AI: Giá chưa đạt' : 'AI: Giá OK'}
+                                </span>
+                                {typeof p.moderationScore === 'number' && (
+                                  <span className="text-[10px] text-slate-500">Điểm nội dung: {p.moderationScore}</span>
+                                )}
+                              </div>
+                            )}
+                            {(moderationFilter === 'ai_auto' || moderationFilter === 'approved') && p.autoApproved && (
+                              <span className="inline-flex w-fit items-center px-2 py-0.5 rounded text-xs font-semibold bg-violet-100 text-violet-800">
+                                AI đã chấp nhận, tự đăng
+                              </span>
+                            )}
+                            {moderationFilter === 'rejected' && aiPricing && (
+                              <span className="text-[10px] text-slate-500">Có log AI lúc đăng</span>
+                            )}
+                            {aiPricing ? (
+                              <p className="text-xs text-slate-600 mt-1.5 line-clamp-4 whitespace-pre-wrap break-words max-w-[280px]">
+                                {aiPricing}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-slate-400 mt-1">—</p>
+                            )}
                           </td>
-                          {moderationFilter === 'pending_approval' && (
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex gap-1.5 justify-end">
-                                <button
-                                  onClick={() => handleApprove(p.id)}
-                                  disabled={actionLoading}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-emerald-600 bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
-                                >
-                                  {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                                  Duyệt
-                                </button>
-                                <button
-                                  onClick={() => setRejectModal({ productId: p.id, productName: p.name })}
-                                  disabled={actionLoading}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-red-600 text-red-600 text-xs font-medium hover:bg-red-50 disabled:opacity-50"
-                                >
-                                  <XCircle className="w-3.5 h-3.5" />
-                                  Từ chối
-                                </button>
+                          <td className="px-4 py-3 align-top">
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className={`inline-flex w-fit items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                  p.status === 'approved'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : p.status === 'rejected'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-amber-100 text-amber-800'
+                                }`}
+                              >
+                                {MODERATION_STATUS[p.status as keyof typeof MODERATION_STATUS] ?? p.status}
+                              </span>
+                              {p.autoApproved && moderationFilter !== 'ai_auto' && (
+                                <span className="text-[10px] text-violet-600 font-medium">Tự động (AI)</span>
+                              )}
+                            </div>
+                          </td>
+                          {moderationFilter === 'rejected' ? (
+                            <td className="px-4 py-3 text-slate-600 text-xs max-w-xs">
+                              <p className="line-clamp-4 break-words">{p.adminComment || '—'}</p>
+                            </td>
+                          ) : (
+                            <td className="px-4 py-3 text-right align-top">
+                              <div className="flex flex-col items-end gap-2">
+                                {moderationFilter === 'pending_approval' && (
+                                  <div className="flex gap-1.5 justify-end flex-wrap">
+                                    <button
+                                      onClick={() => handleApprove(p.id)}
+                                      disabled={actionLoading}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-emerald-600 bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
+                                    >
+                                      {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                                      Duyệt
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        setRejectModal({ productId: p.id, productName: p.name, isRevoke: false })
+                                      }
+                                      disabled={actionLoading}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-red-600 text-red-600 text-xs font-medium hover:bg-red-50 disabled:opacity-50"
+                                    >
+                                      <XCircle className="w-3.5 h-3.5" />
+                                      Từ chối
+                                    </button>
+                                  </div>
+                                )}
+                                {moderationFilter === 'ai_auto' && (
+                                  <div className="flex flex-col items-end gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setRejectModal({ productId: p.id, productName: p.name, isRevoke: true })
+                                      }
+                                      disabled={actionLoading}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-red-600 text-red-600 text-xs font-medium hover:bg-red-50 disabled:opacity-50"
+                                    >
+                                      <XCircle className="w-3.5 h-3.5" />
+                                      Gỡ bài (reject)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => router.push(`/products/${p.id}`)}
+                                      className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900"
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                      Xem trang sản phẩm
+                                    </button>
+                                  </div>
+                                )}
+                                {moderationFilter === 'approved' && (
+                                  <div className="flex flex-col items-end gap-2">
+                                    {canRevokeAuto ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setRejectModal({ productId: p.id, productName: p.name, isRevoke: true })
+                                          }
+                                          disabled={actionLoading}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-red-600 text-red-600 text-xs font-medium hover:bg-red-50 disabled:opacity-50"
+                                        >
+                                          <XCircle className="w-3.5 h-3.5" />
+                                          Gỡ bài AI
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => router.push(`/products/${p.id}`)}
+                                          className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900"
+                                        >
+                                          <ExternalLink className="w-3.5 h-3.5" />
+                                          Xem
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs text-slate-400">Duyệt tay — không gỡ tự động</span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </td>
                           )}
-                          {moderationFilter === 'rejected' && (
-                            <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate text-xs">
-                              {p.adminComment || '—'}
-                            </td>
-                          )}
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -408,8 +553,15 @@ export default function AdminDashboardPage() {
         {rejectModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
             <div className="rounded-lg border border-slate-200 bg-white shadow-xl max-w-md w-full p-5">
-              <h3 className="text-base font-semibold text-slate-900">Từ chối bài đăng</h3>
+              <h3 className="text-base font-semibold text-slate-900">
+                {rejectModal.isRevoke ? 'Gỡ bài sau AI tự duyệt' : 'Từ chối bài đăng'}
+              </h3>
               <p className="text-sm text-slate-500 mt-1">Bài: {rejectModal.productName}</p>
+              {rejectModal.isRevoke && (
+                <p className="text-xs text-amber-700 mt-2 rounded-md bg-amber-50 border border-amber-200 px-2 py-1.5">
+                  Bài đang hiển thị công khai. Sau khi gỡ, trạng thái chuyển sang từ chối và người bán nhận thông báo.
+                </p>
+              )}
               <label className="mt-4 block text-xs font-medium text-slate-700 uppercase tracking-wider">
                 Lý do từ chối <span className="text-red-500">*</span>
               </label>

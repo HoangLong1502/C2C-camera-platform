@@ -8,6 +8,7 @@ import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { User } from '../entities/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AutoModerationService } from './auto-moderation.service';
+import { AiPricingService } from './ai-pricing.service';
 
 @Injectable()
 export class ProductsService {
@@ -22,6 +23,7 @@ export class ProductsService {
         private dataSource: DataSource,
         private notificationsService: NotificationsService,
         private autoModerationService: AutoModerationService,
+        private aiPricingService: AiPricingService,
     ) { }
 
     async create(userId: number, dto: CreateProductDto) {
@@ -191,10 +193,41 @@ export class ProductsService {
                 imagesCount: Array.isArray(productResult.images) ? productResult.images.length : 0,
             });
 
-            productResult.moderationScore = result.score;
-            productResult.moderationIssues = result.issues.length ? result.issues : null;
+            const pricing = await this.aiPricingService.evaluatePricing({
+                name: productResult.name,
+                description: productResult.description,
+                price: Number(productResult.price),
+                categoryId: productResult.categoryId ?? null,
+                condition: productResult.condition,
+            });
 
-            if (autoApproveEnabled && result.passed) {
+            const moderationIssues = [
+                ...result.issues,
+                {
+                    code: 'ai_pricing',
+                    message: `[${pricing.source}] ${pricing.summary} (tham khảo ${pricing.suggestedMinVnd.toLocaleString('vi-VN')}–${pricing.suggestedMaxVnd.toLocaleString('vi-VN')}₫)`,
+                },
+            ];
+            if (!pricing.reasonable) {
+                moderationIssues.push({
+                    code: 'price_unreasonable',
+                    message: 'Giá chưa được hệ thống định giá chấp nhận để tự động đăng bài.',
+                });
+            }
+
+            productResult.moderationScore = result.score;
+            productResult.moderationIssues = moderationIssues.length ? moderationIssues : null;
+
+            // Mặc định: vừa pass moderation rule vừa AI thấy giá hợp lý.
+            // Đặt AUTO_PUBLISH_STRICT_MODERATION=false → chỉ cần AI định giá hợp lý (+ AUTO_APPROVE_ENABLED) là tự publish.
+            const strictModeration =
+                (process.env.AUTO_PUBLISH_STRICT_MODERATION ?? 'true').toLowerCase() === 'true';
+            const canAutoPublish =
+                autoApproveEnabled &&
+                pricing.reasonable &&
+                (!strictModeration || result.passed);
+
+            if (canAutoPublish) {
                 productResult.status = ProductStatus.APPROVED;
                 productResult.approvedAt = new Date();
                 productResult.approvedBy = null;

@@ -9,6 +9,7 @@ import { ChatModule } from '../chat/chat.module';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt.guard';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AutoModerationService } from './auto-moderation.service';
+import { AiPricingService } from './ai-pricing.service';
 
 @Module({
     imports: [
@@ -17,7 +18,7 @@ import { AutoModerationService } from './auto-moderation.service';
         NotificationsModule,
     ],
     controllers: [ProductsController],
-    providers: [ProductsService, OptionalJwtAuthGuard, AutoModerationService],
+    providers: [ProductsService, OptionalJwtAuthGuard, AutoModerationService, AiPricingService],
     exports: [ProductsService],
 })
 export class ProductsModule { }
